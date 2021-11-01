@@ -142,14 +142,16 @@ public static class StringExtentions
     }
     public static float ToFloat(this string s)
     {
+        System.Globalization.CultureInfo ci = new System.Globalization.CultureInfo("en-US");
         float res;
-        float.TryParse(s, out res);
+        float.TryParse(s.Replace(",", "."), System.Globalization.NumberStyles.Float, ci, out res);
         return res;
     }
     public static double ToDouble(this string s)
     {
+        System.Globalization.CultureInfo ci = new System.Globalization.CultureInfo("en-US");
         double res;
-        double.TryParse(s, out res);
+        double.TryParse(s.Replace(",", "."), System.Globalization.NumberStyles.Float, ci, out res);
         return res;
     }
     /// <summary>
