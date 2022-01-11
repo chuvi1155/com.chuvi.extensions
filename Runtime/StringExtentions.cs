@@ -2,6 +2,41 @@
 using System.Collections.Generic;
 public static class StringExtentions
 {
+    /// <summary>
+    /// Возвращает подстроку
+    /// </summary>
+    /// <param name="s"></param>
+    /// <param name="startIndex"></param>
+    /// <returns>Возвращает строку, если ее можно извлеч, 
+    /// в противном случае возвращает пустую строку</returns>
+    public static string GetSubstring(this string s, int startIndex)
+    {
+        if (string.IsNullOrEmpty(s)) return "";
+        if (startIndex < s.Length)
+            return s.Substring(startIndex);
+        return "";
+    }
+    /// <summary>
+    /// Возвращает подстроку
+    /// </summary>
+    /// <param name="s"></param>
+    /// <param name="startIndex"></param>
+    /// <param name="lenght"></param>
+    /// <returns>Возвращает строку, если ее можно извлеч в указанном диапазоне, 
+    /// в противном случае либо возвращает то что возможно, либо пустую строку</returns>
+    public static string GetSubstring(this string s, int startIndex, int lenght)
+    {
+        if (string.IsNullOrEmpty(s)) return "";
+        if (startIndex < s.Length)
+        {
+            if (startIndex + lenght < s.Length)
+                return s.Substring(startIndex, lenght);
+            else 
+                return s.Substring(startIndex);
+        }
+        return "";
+    }
+    
     public static string After(this string s, string value)
     {
         if (string.IsNullOrEmpty(s)) return "";
