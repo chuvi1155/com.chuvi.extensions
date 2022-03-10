@@ -1,7 +1,47 @@
 ﻿using System;
 using System.Collections.Generic;
 public static class StringExtentions
-{
+{/// <summary>
+    /// Возвращает строку от искомого текста и до конца
+    /// </summary>
+    /// <param name="s"></param>
+    /// <param name="value"></param>
+    /// <returns>Возвращает строку от искомого текста и до конца</returns>
+    public static string AfterInclude(this string s, string value, bool emptyIfNotExistsValue = true)
+    {
+        if (string.IsNullOrEmpty(s)) return "";
+        if (s.Contains(value))
+            return s.Substring(s.IndexOf(value));
+        return emptyIfNotExistsValue ? "" : s;
+    }
+    /// <summary>
+    /// Возвращает строку от последнего найденного искомого текста и до конца
+    /// </summary>
+    /// <param name="s"></param>
+    /// <param name="value"></param>
+    /// <returns>Возвращает пустую строку в случае отсутствия искомой строки</returns>
+    public static string AfterLastInclude(this string s, string value, bool emptyIfNotExistsValue = true)
+    {
+        if (string.IsNullOrEmpty(s)) return "";
+        if (s.Contains(value))
+            return s.Substring(s.LastIndexOf(value));
+        return emptyIfNotExistsValue ? "" : s;
+    }
+
+    public static string After(this string s, string value, bool emptyIfNotExistsValue = true)
+    {
+        if (string.IsNullOrEmpty(s)) return "";
+        if (s.Contains(value))
+            return s.Substring(s.IndexOf(value) + value.Length);
+        return emptyIfNotExistsValue ? "" : s;
+    }
+    public static string AfterLast(this string s, string value, bool emptyIfNotExistsValue = true)
+    {
+        if (string.IsNullOrEmpty(s)) return "";
+        if (s.Contains(value))
+            return s.Substring(s.LastIndexOf(value) + value.Length);
+        return emptyIfNotExistsValue ? "" : s;
+    }
     /// <summary>
     /// Возвращает подстроку
     /// </summary>
