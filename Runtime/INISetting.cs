@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -305,6 +305,7 @@ public class UserINISetting
 
     public void Save(string fileName)
     {
+        UnityEngine.Debug.Log("Save INI to file: " + fileName);
         string line = "";
         foreach (var item_group in groups)
         {
@@ -385,6 +386,7 @@ public class UserINISetting
     { }
     public class ValueResult
     {
+        static System.Globalization.CultureInfo ci = new System.Globalization.CultureInfo("en-US");
         string value;
         public ValueType Type;
 
@@ -400,14 +402,15 @@ public class UserINISetting
 
         public T GetValue<T>()
         {
+            Type returnedType = typeof(T);
             if (string.IsNullOrEmpty(value)) return default(T);
-            if (typeof(T) == typeof(string)) return (T)(object)value.Replace("\\n", "\n");
+            if (returnedType == typeof(string)) return (T)(object)value.Replace("\\n", "\n");
 
-            if (typeof(T).IsEnum)
-                return (T)Enum.Parse(typeof(T), value);
+            if (returnedType.IsEnum)
+                return (T)Enum.Parse(returnedType, value);
 
-#if UNITY_5 || UNITY_2017 || UNITY_2018_1_OR_NEWER
-            if (typeof(T) == typeof(UnityEngine.Color))
+#if UNITY_2018_1_OR_NEWER
+            if (returnedType == typeof(UnityEngine.Color))
             {
                 int n1 = value.IndexOf("(") + 1;
                 int n2 = value.IndexOf(")");
@@ -415,18 +418,37 @@ public class UserINISetting
                 string[] bytes = val.Replace("{", "").Replace("}", "").Split(new char[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries);
                 if (bytes.Length > 2)
                 {
-                    float r = float.Parse(bytes[0]);
-                    float g = float.Parse(bytes[1]);
-                    float b = float.Parse(bytes[2]);
+                    float r = float.Parse(bytes[0], ci);
+                    float g = float.Parse(bytes[1], ci);
+                    float b = float.Parse(bytes[2], ci);
                     float a = 1;
                     if (bytes.Length == 4)
-                        a = float.Parse(bytes[3]);
+                        a = float.Parse(bytes[3], ci);
                     object col = new UnityEngine.Color(r, g, b, a);
                     return (T)col;
                 }
                 else return default(T);
             }
-            else if (typeof(T) == typeof(UnityEngine.Vector2))
+            else if (returnedType == typeof(UnityEngine.Color32))
+            {
+                int n1 = value.IndexOf("(") + 1;
+                int n2 = value.IndexOf(")");
+                string val = value.Substring(n1, n2 - n1);
+                string[] bytes = val.Replace("{", "").Replace("}", "").Split(new char[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries);
+                if (bytes.Length > 2)
+                {
+                    byte r = byte.Parse(bytes[0]);
+                    byte g = byte.Parse(bytes[1]);
+                    byte b = byte.Parse(bytes[2]);
+                    byte a = 1;
+                    if (bytes.Length == 4)
+                        a = byte.Parse(bytes[3]);
+                    object col = new UnityEngine.Color32(r, g, b, a);
+                    return (T)col;
+                }
+                else return default(T);
+            }
+            else if (returnedType == typeof(UnityEngine.Vector2))
             {
                 int n1 = value.IndexOf("(") + 1;
                 int n2 = value.IndexOf(")");
@@ -434,30 +456,29 @@ public class UserINISetting
                 string[] bytes = val.Replace("{", "").Replace("}", "").Split(new char[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries);
                 if (bytes.Length > 1)
                 {
-                    float r = float.Parse(bytes[0]);
-                    float g = float.Parse(bytes[1]);
+                    float r = float.Parse(bytes[0], ci);
+                    float g = float.Parse(bytes[1], ci);
                     object col = new UnityEngine.Vector2(r, g);
                     return (T)col;
                 }
                 else return default(T);
             }
-            else if (typeof(T) == typeof(UnityEngine.Vector3))
+            else if (returnedType == typeof(UnityEngine.Vector2Int))
             {
                 int n1 = value.IndexOf("(") + 1;
                 int n2 = value.IndexOf(")");
                 string val = value.Substring(n1, n2 - n1);
                 string[] bytes = val.Replace("{", "").Replace("}", "").Split(new char[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries);
-                if (bytes.Length > 2)
+                if (bytes.Length > 1)
                 {
-                    float r = float.Parse(bytes[0]);
-                    float g = float.Parse(bytes[1]);
-                    float b = float.Parse(bytes[2]);
-                    object col = new UnityEngine.Vector3(r, g, b);
+                    int r = int.Parse(bytes[0]);
+                    int g = int.Parse(bytes[1]);
+                    object col = new UnityEngine.Vector2Int(r, g);
                     return (T)col;
                 }
                 else return default(T);
             }
-            else if (typeof(T) == typeof(UnityEngine.Vector4))
+            else if (returnedType == typeof(UnityEngine.Vector3))
             {
                 int n1 = value.IndexOf("(") + 1;
                 int n2 = value.IndexOf(")");
@@ -465,22 +486,92 @@ public class UserINISetting
                 string[] bytes = val.Replace("{", "").Replace("}", "").Split(new char[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries);
                 if (bytes.Length > 2)
                 {
-                    float r = float.Parse(bytes[0]);
-                    float g = float.Parse(bytes[1]);
-                    float b = float.Parse(bytes[2]);
+                    float r = float.Parse(bytes[0], ci);
+                    float g = float.Parse(bytes[1], ci);
+                    float b = float.Parse(bytes[2], ci);
+                    object col = new UnityEngine.Vector3(r, g, b);
+                    return (T)col;
+                }
+                else if (bytes.Length == 2)
+                {
+                    float r = float.Parse(bytes[0], ci);
+                    float g = float.Parse(bytes[1], ci);
+                    object col = new UnityEngine.Vector3(r, g, 0);
+                    return (T)col;
+                }
+                else return default(T);
+            }
+            else if (returnedType == typeof(UnityEngine.Vector3Int))
+            {
+                int n1 = value.IndexOf("(") + 1;
+                int n2 = value.IndexOf(")");
+                string val = value.Substring(n1, n2 - n1);
+                string[] bytes = val.Replace("{", "").Replace("}", "").Split(new char[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries);
+                if (bytes.Length > 2)
+                {
+                    int r = int.Parse(bytes[0]);
+                    int g = int.Parse(bytes[1]);
+                    int b = int.Parse(bytes[2]);
+                    object col = new UnityEngine.Vector3Int(r, g, b);
+                    return (T)col;
+                }
+                else return default(T);
+            }
+            else if (returnedType == typeof(UnityEngine.Vector4))
+            {
+                int n1 = value.IndexOf("(") + 1;
+                int n2 = value.IndexOf(")");
+                string val = value.Substring(n1, n2 - n1);
+                string[] bytes = val.Replace("{", "").Replace("}", "").Split(new char[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries);
+                if (bytes.Length > 2)
+                {
+                    float r = float.Parse(bytes[0], ci);
+                    float g = float.Parse(bytes[1], ci);
+                    float b = float.Parse(bytes[2], ci);
                     float a = 1;
                     if (bytes.Length == 4)
-                        a = float.Parse(bytes[3]);
+                        a = float.Parse(bytes[3], ci);
                     object col = new UnityEngine.Vector4(r, g, b, a);
                     return (T)col;
                 }
                 else return default(T);
             }
+            else if (returnedType == typeof(UnityEngine.Rect))
+            {
+                int n1 = value.IndexOf("(") + 1;
+                int n2 = value.IndexOf(")");
+                string val = value.Substring(n1, n2 - n1);
+                string[] bytes = val.Replace("{", "").Replace("}", "").Split(new char[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries);
+                if (bytes.Length == 4)
+                {
+                    float x = float.Parse(bytes[0].Substring(bytes[0].IndexOf(":") + 1), ci);
+                    float y = float.Parse(bytes[1].Substring(bytes[1].IndexOf(":") + 1), ci);
+                    float w = float.Parse(bytes[2].Substring(bytes[2].IndexOf(":") + 1), ci);
+                    float h = float.Parse(bytes[3].Substring(bytes[3].IndexOf(":") + 1), ci);
+                    object col = new UnityEngine.Rect(x, y, w, h);
+                    return (T)col;
+                }
+                else return default(T);
+            }
+            else if (returnedType == typeof(UnityEngine.RectInt))
+            {
+                int n1 = value.IndexOf("(") + 1;
+                int n2 = value.IndexOf(")");
+                string val = value.Substring(n1, n2 - n1);
+                string[] bytes = val.Replace("{", "").Replace("}", "").Split(new char[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries);
+                if (bytes.Length == 4)
+                {
+                    int x = int.Parse(bytes[0].Substring(bytes[0].IndexOf(":") + 1));
+                    int y = int.Parse(bytes[1].Substring(bytes[1].IndexOf(":") + 1));
+                    int w = int.Parse(bytes[2].Substring(bytes[2].IndexOf(":") + 1));
+                    int h = int.Parse(bytes[3].Substring(bytes[3].IndexOf(":") + 1));
+                    object col = new UnityEngine.RectInt(x, y, w, h);
+                    return (T)col;
+                }
+                else return default(T);
+            }
 #endif
-
-            if (typeof(T) == typeof(float))
-                return (T)System.Convert.ChangeType(value.Replace(",", "."), typeof(T));
-            return (T)System.Convert.ChangeType(value, typeof(T));
+            return (T)System.Convert.ChangeType(value, returnedType, ci);
         }
 
         public override string ToString()
