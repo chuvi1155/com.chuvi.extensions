@@ -1,0 +1,22 @@
+{
+    "name": "Unity.ChuviExtensions.Editor",
+    "rootNamespace": "",
+    "references": [],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.chuvi.extensions",
+            "expression": "1.0.0",
+            "define": "CHUVI_EXTENSIONS_EDITOR"
+        }
+    ],
+    "noEngineReferences": false
+}
