@@ -8,7 +8,7 @@ using System.Threading;
 public class INISetting
 {
     private static UserINISetting instance;
-    
+
     public static string FileName { get { return instance.FileName; } }
 
     public static string DEFAULT_GROUP
@@ -57,7 +57,7 @@ public class INISetting
     {
         return instance.GetValueWithAdd<T>(key, defaultValue);
     }
-    
+
     public static bool Exists(string group)
     {
         return instance.Exists(group);
@@ -104,7 +104,7 @@ public class UserINISetting
     {
         get { return defaultGroup; }
     }
-    
+
 
     public UserINISetting(string filename)
     {
@@ -119,7 +119,7 @@ public class UserINISetting
         string[] lines = File.ReadAllLines(filename);
 
         GroupValue curent_group_key = defaultGroup;
-        
+
         for (int i = 0; i < lines.Length; i++)
         {
             if (string.IsNullOrEmpty(lines[i])) continue;
@@ -229,7 +229,7 @@ public class UserINISetting
                 iv[key] = new ValueResult(defaultValue.ToString());
             else if (!isExists)
                 iv.Add(key, new ValueResult(defaultValue.ToString()));
-            
+
             if (typeof(T).IsEnum && !groups.ContainsKey("ENUM:" + typeof(T).Name))
             {
                 INI_Values _iv2 = new INI_Values();
@@ -270,7 +270,7 @@ public class UserINISetting
             value = "";
         if (Exists(group, key))
         {
-            if(!(value is float))
+            if (!(value is float))
                 groups[group][key] = new ValueResult(value.ToString());
             else
                 groups[group][key] = new ValueResult(value.ToString().Replace(",", "."));
@@ -284,8 +284,15 @@ public class UserINISetting
                 if (!(value is float)) groups[group].Add(key, new ValueResult(value.ToString()));
                 else
                     groups[group].Add(key, new ValueResult(value.ToString().Replace(",", ".")));
-                
             }
+        }
+        if (value.GetType().IsEnum && !groups.ContainsKey("ENUM:" + value.GetType().Name))
+        {
+            INI_Values _iv2 = new INI_Values();
+            string[] names = Enum.GetNames(value.GetType());
+            for (int i = 0; i < names.Length; i++)
+                _iv2.Add("names[" + i + "]", new ValueResult(names[i]));
+            groups.Add("ENUM:" + value.GetType().Name, _iv2);
         }
     }
     public void SetValue(string key, string value, bool isComment)
@@ -307,13 +314,13 @@ public class UserINISetting
         string line = "";
         foreach (var item_group in groups)
         {
-            if(item_group.Key.Type == ValueType.Comments)
+            if (item_group.Key.Type == ValueType.Comments)
                 line += string.Format("#{0}\r\n", item_group.Key);
             else
                 line += string.Format("{0}\r\n", item_group.Key);
             foreach (var item in item_group.Value)
             {
-                if(item.Value.Type == ValueType.Comments || item_group.Key.Type == ValueType.Comments)
+                if (item.Value.Type == ValueType.Comments || item_group.Key.Type == ValueType.Comments)
                     line += string.Format("#{0}={1}\r\n", item.Key, item.Value.ToString());
                 else
                     line += string.Format("{0}={1}\r\n", item.Key, item.Value.ToString());
