@@ -1,12 +1,14 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
+using System.Threading;
 
 public class INISetting
 {
     private static UserINISetting instance;
-
+    
     public static string FileName { get { return instance.FileName; } }
 
     public static string DEFAULT_GROUP
@@ -55,7 +57,7 @@ public class INISetting
     {
         return instance.GetValueWithAdd<T>(key, defaultValue);
     }
-
+    
     public static bool Exists(string group)
     {
         return instance.Exists(group);
@@ -66,13 +68,17 @@ public class INISetting
         return instance.Exists(group, key);
     }
 
-    public static void SetValue(string group, string key, object value, bool isComment = false)
+    public static void SetValue(string group, string key, object value)
     {
-        instance.SetValue(group, key, value, isComment);
+        instance.SetValue(group, key, value, false);
     }
-    public static void SetValue(string key, string value, bool isComment = false)
+    public static void SetValue(string key, string value)
     {
-        instance.SetValue(key, value, isComment);
+        instance.SetValue(key, value, false);
+    }
+    public static void SetValue(string key, object value)
+    {
+        instance.SetValue(key, value, false);
     }
 
     public static void Save()
@@ -92,30 +98,28 @@ public class UserINISetting
     private Dictionary<GroupValue, INI_Values> groups = new Dictionary<GroupValue, INI_Values>();
     private string defaultGroup = "Default";
 
-    public string FileName { get; private set; }
+    public string FileName = "";
 
     public string DEFAULT_GROUP
     {
         get { return defaultGroup; }
     }
-
+    
 
     public UserINISetting(string filename)
     {
-#if UNITY_ANDROID
-        filename = Path.Combine(UnityEngine.Application.persistentDataPath, filename);
-#endif
+        CultureInfo ci = new System.Globalization.CultureInfo("en-US");
+        Thread.CurrentThread.CurrentCulture = ci;
+        Thread.CurrentThread.CurrentUICulture = ci;
+
         FileName = filename;
-        if (!File.Exists(filename))
-            return;
+        if (!File.Exists(filename)) return;
         groups.Clear();
-        //#if UNITY_5
-        //        UnityEngine.Debug.Log("found settings file");
-        //#endif
+
         string[] lines = File.ReadAllLines(filename);
 
         GroupValue curent_group_key = defaultGroup;
-
+        
         for (int i = 0; i < lines.Length; i++)
         {
             if (string.IsNullOrEmpty(lines[i])) continue;
@@ -180,26 +184,14 @@ public class UserINISetting
                 val = groups[group][key].GetValue<T>();
                 return true;
             }
-            else
+            /*else
             {
                 groups[group].Add(key, new ValueResult(default(T).ToString(), ValueType.Comments));
                 Save(FileName);
-            }
+            }*/
         }
         else
         {
-            //string line = "";
-            //foreach (var item_group in groups)
-            //{
-            //    line += string.Format("[{0}]\r\n", item_group.Key);
-            //    foreach (var item in item_group.Value)
-            //    {
-            //        line += string.Format("{0}={1}\r\n", item.Key, item.Value.ToString());
-            //    }
-            //}
-            //line += string.Format("#[{0}]\r\n", group);
-            //line += string.Format("#{0}={1}\r\n", key, default(T));
-            //File.WriteAllText(FileName, line, System.Text.Encoding.UTF8);
             groups.Add(new GroupValue(group, ValueType.Comments), new INI_Values());
             groups[group].Add(key, new ValueResult(default(T).ToString(), ValueType.Comments));
             Save(FileName);
@@ -213,47 +205,40 @@ public class UserINISetting
         T val;
         if (!groups.ContainsKey(group))
         {
-            //string line = "";
-            //foreach (var item_group in groups)
-            //{
-            //    line += string.Format("[{0}]\r\n", item_group.Key);
-            //    foreach (var item in item_group.Value)
-            //    {
-            //        line += string.Format("{0}={1}\r\n", item.Key, item.Value.ToString());
-            //    }
-            //}
-            //line += string.Format("[{0}]\r\n", group);
-            //line += string.Format("{0}={1}\r\n", key, defaultValue);
-            //File.WriteAllText(FileName, line, System.Text.Encoding.UTF8);
             val = defaultValue;
             INI_Values _iv = new INI_Values();
             _iv.Add(key, new ValueResult(defaultValue.ToString()));
             groups.Add(group, _iv);
+            if (typeof(T).IsEnum && !groups.ContainsKey("ENUM:" + typeof(T).Name))
+            {
+                INI_Values _iv2 = new INI_Values();
+                string[] names = Enum.GetNames(typeof(T));
+                for (int i = 0; i < names.Length; i++)
+                    _iv2.Add("names[" + i + "]", new ValueResult(names[i]));
+                groups.Add("ENUM:" + typeof(T).Name, _iv2);
+            }
             Save(FileName);
             return val;
         }
         INI_Values iv = groups[group];
         if (!iv.ContainsKey(key) || iv[key].IsEmpty)
         {
-            //#if UNITY_5
-            //            UnityEngine.Debug.LogWarningFormat("Settings.ini >> key:'{0}', or value is empty", key);
-            //#endif
             val = defaultValue;
-            //string line = "";
             bool isExists = iv.ContainsKey(key);
             if (isExists && iv[key].IsEmpty)
                 iv[key] = new ValueResult(defaultValue.ToString());
             else if (!isExists)
                 iv.Add(key, new ValueResult(defaultValue.ToString()));
-            //foreach (var item_group in groups)
-            //{
-            //    line += string.Format("[{0}]\r\n", item_group.Key);
-            //    foreach (var item in item_group.Value)
-            //    {
-            //        line += string.Format("{0}={1}\r\n", item.Key, item.Value.ToString());
-            //    }
-            //}
-            //File.WriteAllText(FileName, line, System.Text.Encoding.UTF8);
+            
+            if (typeof(T).IsEnum && !groups.ContainsKey("ENUM:" + typeof(T).Name))
+            {
+                INI_Values _iv2 = new INI_Values();
+                string[] names = Enum.GetNames(typeof(T));
+                for (int i = 0; i < names.Length; i++)
+                    _iv2.Add("names[" + i + "]", new ValueResult(names[i]));
+                groups.Add("ENUM:" + typeof(T).Name, _iv2);
+            }
+
             Save();
         }
         else val = iv[key].GetValue<T>();
@@ -279,21 +264,35 @@ public class UserINISetting
         return groups.ContainsKey(group) && groups[group].ContainsKey(key);
     }
 
-    public void SetValue(string group, string key, object value, bool isComment = false)
+    public void SetValue(string group, string key, object value, bool isComment)
     {
+        if (value == null)
+            value = "";
         if (Exists(group, key))
         {
-            groups[group][key] = new ValueResult(value.ToString());
+            if(!(value is float))
+                groups[group][key] = new ValueResult(value.ToString());
+            else
+                groups[group][key] = new ValueResult(value.ToString().Replace(",", "."));
         }
         else
         {
             if (!groups.ContainsKey(group))
                 groups.Add(group, new INI_Values());
             if (!groups[group].ContainsKey(key))
-                groups[group].Add(key, new ValueResult(value.ToString()));
+            {
+                if (!(value is float)) groups[group].Add(key, new ValueResult(value.ToString()));
+                else
+                    groups[group].Add(key, new ValueResult(value.ToString().Replace(",", ".")));
+                
+            }
         }
     }
-    public void SetValue(string key, string value, bool isComment = false)
+    public void SetValue(string key, string value, bool isComment)
+    {
+        SetValue(defaultGroup, key, value, isComment);
+    }
+    public void SetValue(string key, object value, bool isComment)
     {
         SetValue(defaultGroup, key, value, isComment);
     }
@@ -305,7 +304,26 @@ public class UserINISetting
 
     public void Save(string fileName)
     {
-        UnityEngine.Debug.Log("Save INI to file: " + fileName);
+        string line = "";
+        foreach (var item_group in groups)
+        {
+            if(item_group.Key.Type == ValueType.Comments)
+                line += string.Format("#{0}\r\n", item_group.Key);
+            else
+                line += string.Format("{0}\r\n", item_group.Key);
+            foreach (var item in item_group.Value)
+            {
+                if(item.Value.Type == ValueType.Comments || item_group.Key.Type == ValueType.Comments)
+                    line += string.Format("#{0}={1}\r\n", item.Key, item.Value.ToString());
+                else
+                    line += string.Format("{0}={1}\r\n", item.Key, item.Value.ToString());
+            }
+        }
+        File.WriteAllText(fileName, line, System.Text.Encoding.UTF8);
+    }
+
+    public override string ToString()
+    {
         string line = "";
         foreach (var item_group in groups)
         {
@@ -321,7 +339,7 @@ public class UserINISetting
                     line += string.Format("{0}={1}\r\n", item.Key, item.Value.ToString());
             }
         }
-        File.WriteAllText(fileName, line, System.Text.Encoding.UTF8);
+        return line;
     }
 
     public enum ValueType
@@ -386,7 +404,6 @@ public class UserINISetting
     { }
     public class ValueResult
     {
-        static System.Globalization.CultureInfo ci = new System.Globalization.CultureInfo("en-US");
         string value;
         public ValueType Type;
 
@@ -402,15 +419,14 @@ public class UserINISetting
 
         public T GetValue<T>()
         {
-            Type returnedType = typeof(T);
             if (string.IsNullOrEmpty(value)) return default(T);
-            if (returnedType == typeof(string)) return (T)(object)value.Replace("\\n", "\n");
+            if (typeof(T) == typeof(string)) return (T)(object)value.Replace("\\n", "\n");
 
-            if (returnedType.IsEnum)
-                return (T)Enum.Parse(returnedType, value);
+            if (typeof(T).IsEnum)
+                return (T)Enum.Parse(typeof(T), value);
 
-#if UNITY_2018_1_OR_NEWER
-            if (returnedType == typeof(UnityEngine.Color))
+#if UNITY_5 || UNITY_STANDALONE_WIN
+            if (typeof(T) == typeof(UnityEngine.Color))
             {
                 int n1 = value.IndexOf("(") + 1;
                 int n2 = value.IndexOf(")");
@@ -418,37 +434,18 @@ public class UserINISetting
                 string[] bytes = val.Replace("{", "").Replace("}", "").Split(new char[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries);
                 if (bytes.Length > 2)
                 {
-                    float r = float.Parse(bytes[0], ci);
-                    float g = float.Parse(bytes[1], ci);
-                    float b = float.Parse(bytes[2], ci);
+                    float r = float.Parse(bytes[0], new CultureInfo("en-US"));
+                    float g = float.Parse(bytes[1], new CultureInfo("en-US"));
+                    float b = float.Parse(bytes[2], new CultureInfo("en-US"));
                     float a = 1;
                     if (bytes.Length == 4)
-                        a = float.Parse(bytes[3], ci);
+                        a = float.Parse(bytes[3]);
                     object col = new UnityEngine.Color(r, g, b, a);
                     return (T)col;
                 }
                 else return default(T);
             }
-            else if (returnedType == typeof(UnityEngine.Color32))
-            {
-                int n1 = value.IndexOf("(") + 1;
-                int n2 = value.IndexOf(")");
-                string val = value.Substring(n1, n2 - n1);
-                string[] bytes = val.Replace("{", "").Replace("}", "").Split(new char[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries);
-                if (bytes.Length > 2)
-                {
-                    byte r = byte.Parse(bytes[0]);
-                    byte g = byte.Parse(bytes[1]);
-                    byte b = byte.Parse(bytes[2]);
-                    byte a = 1;
-                    if (bytes.Length == 4)
-                        a = byte.Parse(bytes[3]);
-                    object col = new UnityEngine.Color32(r, g, b, a);
-                    return (T)col;
-                }
-                else return default(T);
-            }
-            else if (returnedType == typeof(UnityEngine.Vector2))
+            else if (typeof(T) == typeof(UnityEngine.Vector2))
             {
                 int n1 = value.IndexOf("(") + 1;
                 int n2 = value.IndexOf(")");
@@ -456,29 +453,14 @@ public class UserINISetting
                 string[] bytes = val.Replace("{", "").Replace("}", "").Split(new char[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries);
                 if (bytes.Length > 1)
                 {
-                    float r = float.Parse(bytes[0], ci);
-                    float g = float.Parse(bytes[1], ci);
+                    float r = float.Parse(bytes[0], new CultureInfo("en-US"));
+                    float g = float.Parse(bytes[1], new CultureInfo("en-US"));
                     object col = new UnityEngine.Vector2(r, g);
                     return (T)col;
                 }
                 else return default(T);
             }
-            else if (returnedType == typeof(UnityEngine.Vector2Int))
-            {
-                int n1 = value.IndexOf("(") + 1;
-                int n2 = value.IndexOf(")");
-                string val = value.Substring(n1, n2 - n1);
-                string[] bytes = val.Replace("{", "").Replace("}", "").Split(new char[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries);
-                if (bytes.Length > 1)
-                {
-                    int r = int.Parse(bytes[0]);
-                    int g = int.Parse(bytes[1]);
-                    object col = new UnityEngine.Vector2Int(r, g);
-                    return (T)col;
-                }
-                else return default(T);
-            }
-            else if (returnedType == typeof(UnityEngine.Vector3))
+            else if (typeof(T) == typeof(UnityEngine.Vector3))
             {
                 int n1 = value.IndexOf("(") + 1;
                 int n2 = value.IndexOf(")");
@@ -486,22 +468,15 @@ public class UserINISetting
                 string[] bytes = val.Replace("{", "").Replace("}", "").Split(new char[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries);
                 if (bytes.Length > 2)
                 {
-                    float r = float.Parse(bytes[0], ci);
-                    float g = float.Parse(bytes[1], ci);
-                    float b = float.Parse(bytes[2], ci);
+                    float r = float.Parse(bytes[0], new CultureInfo("en-US"));
+                    float g = float.Parse(bytes[1], new CultureInfo("en-US"));
+                    float b = float.Parse(bytes[2], new CultureInfo("en-US"));
                     object col = new UnityEngine.Vector3(r, g, b);
                     return (T)col;
                 }
-                else if (bytes.Length == 2)
-                {
-                    float r = float.Parse(bytes[0], ci);
-                    float g = float.Parse(bytes[1], ci);
-                    object col = new UnityEngine.Vector3(r, g, 0);
-                    return (T)col;
-                }
                 else return default(T);
             }
-            else if (returnedType == typeof(UnityEngine.Vector3Int))
+            else if (typeof(T) == typeof(UnityEngine.Vector4))
             {
                 int n1 = value.IndexOf("(") + 1;
                 int n2 = value.IndexOf(")");
@@ -509,34 +484,18 @@ public class UserINISetting
                 string[] bytes = val.Replace("{", "").Replace("}", "").Split(new char[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries);
                 if (bytes.Length > 2)
                 {
-                    int r = int.Parse(bytes[0]);
-                    int g = int.Parse(bytes[1]);
-                    int b = int.Parse(bytes[2]);
-                    object col = new UnityEngine.Vector3Int(r, g, b);
-                    return (T)col;
-                }
-                else return default(T);
-            }
-            else if (returnedType == typeof(UnityEngine.Vector4))
-            {
-                int n1 = value.IndexOf("(") + 1;
-                int n2 = value.IndexOf(")");
-                string val = value.Substring(n1, n2 - n1);
-                string[] bytes = val.Replace("{", "").Replace("}", "").Split(new char[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries);
-                if (bytes.Length > 2)
-                {
-                    float r = float.Parse(bytes[0], ci);
-                    float g = float.Parse(bytes[1], ci);
-                    float b = float.Parse(bytes[2], ci);
+                    float r = float.Parse(bytes[0], new CultureInfo("en-US"));
+                    float g = float.Parse(bytes[1], new CultureInfo("en-US"));
+                    float b = float.Parse(bytes[2], new CultureInfo("en-US"));
                     float a = 1;
                     if (bytes.Length == 4)
-                        a = float.Parse(bytes[3], ci);
+                        a = float.Parse(bytes[3]);
                     object col = new UnityEngine.Vector4(r, g, b, a);
                     return (T)col;
                 }
                 else return default(T);
             }
-            else if (returnedType == typeof(UnityEngine.Rect))
+            else if (typeof(T) == typeof(UnityEngine.Rect))
             {
                 int n1 = value.IndexOf("(") + 1;
                 int n2 = value.IndexOf(")");
@@ -544,34 +503,20 @@ public class UserINISetting
                 string[] bytes = val.Replace("{", "").Replace("}", "").Split(new char[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries);
                 if (bytes.Length == 4)
                 {
-                    float x = float.Parse(bytes[0].Substring(bytes[0].IndexOf(":") + 1), ci);
-                    float y = float.Parse(bytes[1].Substring(bytes[1].IndexOf(":") + 1), ci);
-                    float w = float.Parse(bytes[2].Substring(bytes[2].IndexOf(":") + 1), ci);
-                    float h = float.Parse(bytes[3].Substring(bytes[3].IndexOf(":") + 1), ci);
+                    float x = float.Parse(bytes[0].Substring(bytes[0].IndexOf(":") + 1), new CultureInfo("en-US"));
+                    float y = float.Parse(bytes[1].Substring(bytes[1].IndexOf(":") + 1), new CultureInfo("en-US"));
+                    float w = float.Parse(bytes[2].Substring(bytes[2].IndexOf(":") + 1), new CultureInfo("en-US"));
+                    float h = float.Parse(bytes[3].Substring(bytes[3].IndexOf(":") + 1), new CultureInfo("en-US"));
                     object col = new UnityEngine.Rect(x, y, w, h);
                     return (T)col;
                 }
                 else return default(T);
             }
-            else if (returnedType == typeof(UnityEngine.RectInt))
-            {
-                int n1 = value.IndexOf("(") + 1;
-                int n2 = value.IndexOf(")");
-                string val = value.Substring(n1, n2 - n1);
-                string[] bytes = val.Replace("{", "").Replace("}", "").Split(new char[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries);
-                if (bytes.Length == 4)
-                {
-                    int x = int.Parse(bytes[0].Substring(bytes[0].IndexOf(":") + 1));
-                    int y = int.Parse(bytes[1].Substring(bytes[1].IndexOf(":") + 1));
-                    int w = int.Parse(bytes[2].Substring(bytes[2].IndexOf(":") + 1));
-                    int h = int.Parse(bytes[3].Substring(bytes[3].IndexOf(":") + 1));
-                    object col = new UnityEngine.RectInt(x, y, w, h);
-                    return (T)col;
-                }
-                else return default(T);
-            }
 #endif
-            return (T)System.Convert.ChangeType(value, returnedType, ci);
+
+            if (typeof(T) == typeof(float))
+                return (T)System.Convert.ChangeType(value.Replace(",", "."), typeof(T), new CultureInfo("en-US"));
+            return (T)System.Convert.ChangeType(value, typeof(T), new CultureInfo("en-US"));
         }
 
         public override string ToString()
