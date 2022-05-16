@@ -21,6 +21,11 @@ public class INISetting
         instance = ReloadINI("settings.ini");
     }
 
+    public static void ReloadINI()
+    {
+        instance = new UserINISetting(instance.FileName);
+    }
+
     public static UserINISetting ReloadINI(string filename)
     {
         var instance = new UserINISetting(filename);
