@@ -1,3 +1,20 @@
 {
-	"name": "Unity.ChuviExtensions"
+    "name": "Unity.ChuviExtensions",
+    "rootNamespace": "",
+    "references": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.chuvi.extensions",
+            "expression": "1.0.0",
+            "define": "CHUVI_EXTENSIONS"
+        }
+    ],
+    "noEngineReferences": false
 }
