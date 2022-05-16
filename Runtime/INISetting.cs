@@ -472,6 +472,21 @@ public class UserINISetting
                 }
                 else return default(T);
             }
+            else if (typeof(T) == typeof(UnityEngine.Vector2Int))
+            {
+                int n1 = value.IndexOf("(") + 1;
+                int n2 = value.IndexOf(")");
+                string val = value.Substring(n1, n2 - n1);
+                string[] bytes = val.Replace("{", "").Replace("}", "").Split(new char[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries);
+                if (bytes.Length > 1)
+                {
+                    int r = int.Parse(bytes[0], new CultureInfo("en-US"));
+                    int g = int.Parse(bytes[1], new CultureInfo("en-US"));
+                    object col = new UnityEngine.Vector2Int(r, g);
+                    return (T)col;
+                }
+                else return default(T);
+            }
             else if (typeof(T) == typeof(UnityEngine.Vector3))
             {
                 int n1 = value.IndexOf("(") + 1;
@@ -484,6 +499,22 @@ public class UserINISetting
                     float g = float.Parse(bytes[1], new CultureInfo("en-US"));
                     float b = float.Parse(bytes[2], new CultureInfo("en-US"));
                     object col = new UnityEngine.Vector3(r, g, b);
+                    return (T)col;
+                }
+                else return default(T);
+            }
+            else if (typeof(T) == typeof(UnityEngine.Vector3Int))
+            {
+                int n1 = value.IndexOf("(") + 1;
+                int n2 = value.IndexOf(")");
+                string val = value.Substring(n1, n2 - n1);
+                string[] bytes = val.Replace("{", "").Replace("}", "").Split(new char[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries);
+                if (bytes.Length > 2)
+                {
+                    int r = int.Parse(bytes[0], new CultureInfo("en-US"));
+                    int g = int.Parse(bytes[1], new CultureInfo("en-US"));
+                    int b = int.Parse(bytes[2], new CultureInfo("en-US"));
+                    object col = new UnityEngine.Vector3Int(r, g, b);
                     return (T)col;
                 }
                 else return default(T);
@@ -520,6 +551,23 @@ public class UserINISetting
                     float w = float.Parse(bytes[2].Substring(bytes[2].IndexOf(":") + 1), new CultureInfo("en-US"));
                     float h = float.Parse(bytes[3].Substring(bytes[3].IndexOf(":") + 1), new CultureInfo("en-US"));
                     object col = new UnityEngine.Rect(x, y, w, h);
+                    return (T)col;
+                }
+                else return default(T);
+            }
+            else if (typeof(T) == typeof(UnityEngine.RectInt))
+            {
+                int n1 = value.IndexOf("(") + 1;
+                int n2 = value.IndexOf(")");
+                string val = value.Substring(n1, n2 - n1);
+                string[] bytes = val.Replace("{", "").Replace("}", "").Split(new char[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries);
+                if (bytes.Length == 4)
+                {
+                    int x = int.Parse(bytes[0].Substring(bytes[0].IndexOf(":") + 1), new CultureInfo("en-US"));
+                    int y = int.Parse(bytes[1].Substring(bytes[1].IndexOf(":") + 1), new CultureInfo("en-US"));
+                    int w = int.Parse(bytes[2].Substring(bytes[2].IndexOf(":") + 1), new CultureInfo("en-US"));
+                    int h = int.Parse(bytes[3].Substring(bytes[3].IndexOf(":") + 1), new CultureInfo("en-US"));
+                    object col = new UnityEngine.RectInt(x, y, w, h);
                     return (T)col;
                 }
                 else return default(T);
