@@ -15,6 +15,7 @@ public class INISetting
     {
         get { return instance.DEFAULT_GROUP; }
     }
+    public static Dictionary<UserINISetting.GroupValue, UserINISetting.INI_Values> Data => instance.Data;
 
     static INISetting()
     {
@@ -104,6 +105,8 @@ public class UserINISetting
     private string defaultGroup = "Default";
 
     public string FileName = "";
+
+    public Dictionary<GroupValue, INI_Values> Data => groups;
 
     public string DEFAULT_GROUP
     {
