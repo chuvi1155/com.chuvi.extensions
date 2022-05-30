@@ -56,8 +56,9 @@ public class GameObjectExtentions : MonoBehaviour
             bool res = GUI.Toggle(r, objects[instanceID].activeSelf, "");
             if (GUI.changed)
             {
+                if(objects[instanceID].activeSelf != res)
+                    EditorUtility.SetDirty(objects[instanceID]);
                 objects[instanceID].SetActive(res);
-                EditorUtility.SetDirty(objects[instanceID]);
             }
             //GUI.color = col;
         }
