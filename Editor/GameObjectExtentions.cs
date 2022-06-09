@@ -50,17 +50,11 @@ public class GameObjectExtentions : MonoBehaviour
             r.width = 18;
             r.height = 18;
             //r.y += 4;
-            //Color col = GUI.color;
+            Color col = GUI.color;
             //GUI.color = markedSublines[instanceID].curveColor;
             //GUI.DrawTexture(r, texture);
-            bool res = GUI.Toggle(r, objects[instanceID].activeSelf, "");
-            if (GUI.changed)
-            {
-                if(objects[instanceID].activeSelf != res)
-                    EditorUtility.SetDirty(objects[instanceID]);
-                objects[instanceID].SetActive(res);
-            }
-            //GUI.color = col;
+            objects[instanceID].SetActive(GUI.Toggle(r, objects[instanceID].activeSelf, ""));
+            GUI.color = col;
         }
     }
 }
