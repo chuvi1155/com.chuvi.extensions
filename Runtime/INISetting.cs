@@ -20,10 +20,12 @@ public class INISetting
     static INISetting()
     {
         instance = ReloadINI("settings.ini");
+#if CHUVI_SETTINGS
         UnityEngine.GameObject go = UnityEngine.Resources.Load<UnityEngine.GameObject>("Settings");
         var inst = UnityEngine.GameObject.Instantiate(go);
         var contr = inst.GetComponent<ISettingsController>();
-        contr.Settings = instance;
+        contr.Settings = instance; 
+#endif
     }
 
     public static void ReloadINI()
@@ -102,7 +104,10 @@ public class INISetting
 
 }
 
-public class UserINISetting : ISettings
+public class UserINISetting
+#if CHUVI_EXTENSIONS
+         : ISettings 
+#endif
 {
     private Dictionary<GroupValue, INI_Values> groups = new Dictionary<GroupValue, INI_Values>();
     private string defaultGroup = "Default";
@@ -116,11 +121,13 @@ public class UserINISetting : ISettings
         get { return defaultGroup; }
     }
 
-    object ISettings.RawData => Data;
+#if CHUVI_EXTENSIONS
+    object ISettings.RawData => Data; 
+#endif
 
     public UserINISetting(string filename)
     {
-        CultureInfo ci = new System.Globalization.CultureInfo("en-US");
+        CultureInfo ci = new CultureInfo("en-US");
         Thread.CurrentThread.CurrentCulture = ci;
         Thread.CurrentThread.CurrentUICulture = ci;
 
@@ -367,6 +374,7 @@ public class UserINISetting : ISettings
         return line;
     }
 
+#if CHUVI_EXTENSIONS
     ISettingsData[] ISettings.GetData()
     {
         List<ISettingsData> data = new List<ISettingsData>();
@@ -379,7 +387,8 @@ public class UserINISetting : ISettings
             }
         }
         return data.ToArray();
-    }
+    } 
+#endif
 
     public enum ValueType
     {
@@ -614,6 +623,7 @@ public class UserINISetting : ISettings
         }
     }
 
+#if CHUVI_EXTENSIONS
     private class IniData : ISettingsData
     {
         string group, key;
@@ -652,6 +662,7 @@ public class UserINISetting : ISettings
         {
             settings.SetValue(group, key, value, false);
         }
-    }
+    } 
+#endif
 }
 

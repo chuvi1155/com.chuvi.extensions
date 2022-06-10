@@ -2,7 +2,18 @@
     "name": "Unity.ChuviExtensions",
     "rootNamespace": "",
     "references": [],
-    "includePlatforms": [],
+    "includePlatforms": [
+        "Android",
+        "Editor",
+        "EmbeddedLinux",
+        "iOS",
+        "LinuxStandalone64",
+        "macOSStandalone",
+        "tvOS",
+        "WebGL",
+        "WindowsStandalone32",
+        "WindowsStandalone64"
+    ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,
@@ -10,6 +21,11 @@
     "autoReferenced": true,
     "defineConstraints": [],
     "versionDefines": [
+        {
+            "name": "com.chuvi.settingscontroller",
+            "expression": "1.0.0",
+            "define": "CHUVI_SETTINGS"
+        },
         {
             "name": "com.chuvi.extensions",
             "expression": "1.0.0",
