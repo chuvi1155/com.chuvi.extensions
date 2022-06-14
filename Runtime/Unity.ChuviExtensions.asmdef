@@ -5,7 +5,6 @@
     "includePlatforms": [
         "Android",
         "Editor",
-        "EmbeddedLinux",
         "iOS",
         "LinuxStandalone64",
         "macOSStandalone",
