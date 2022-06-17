@@ -46,13 +46,13 @@ public class SvnExtension : EditorWindow
     {
 #if UNITY_2019
         if (Selection.objects.Length == 0) return;
-#elif UNITY_2020
+#elif UNITY_2020_1_OR_NEWER
         if (Selection.count == 0) return; 
 #endif
         List<string> files = new List<string>();
 #if UNITY_2019
-        for (int i = 0; i < Selection.objects.Length; i++) 
-#elif UNITY_2020
+        for (int i = 0; i < Selection.objects.Length; i++)
+#elif UNITY_2020_1_OR_NEWER
         for (int i = 0; i < Selection.count; i++) 
 #endif
         {
@@ -102,13 +102,13 @@ public class SvnExtension : EditorWindow
     {
 #if UNITY_2019
         if (Selection.objects.Length == 0) return;
-#elif UNITY_2020
+#elif UNITY_2020_1_OR_NEWER
         if (Selection.count == 0) return; 
 #endif
         List<string> files = new List<string>();
 #if UNITY_2019
         for (int i = 0; i < Selection.objects.Length; i++)
-#elif UNITY_2020
+#elif UNITY_2020_1_OR_NEWER
         for (int i = 0; i < Selection.count; i++) 
 #endif
         {
@@ -165,13 +165,13 @@ public class SvnExtension : EditorWindow
     {
 #if UNITY_2019
         if (Selection.objects.Length == 0) return false;
-#elif UNITY_2020
+#elif UNITY_2020_1_OR_NEWER
         if (Selection.count == 0) return false; 
 #endif
         {
 #if UNITY_2019
             for (int i = 0; i < Selection.objects.Length; i++)
-#elif UNITY_2020
+#elif UNITY_2020_1_OR_NEWER
             for (int i = 0; i < Selection.count; i++) 
 #endif
             {
