@@ -44,9 +44,17 @@ public class SvnExtension : EditorWindow
     }
     void OnCommitSelectedFileClick()
     {
-        if (Selection.count == 0) return;
+#if UNITY_2019
+        if (Selection.objects.Length == 0) return;
+#elif UNITY_2020
+        if (Selection.count == 0) return; 
+#endif
         List<string> files = new List<string>();
-        for (int i = 0; i < Selection.count; i++)
+#if UNITY_2019
+        for (int i = 0; i < Selection.objects.Length; i++) 
+#elif UNITY_2020
+        for (int i = 0; i < Selection.count; i++) 
+#endif
         {
             string path = AssetDatabase.GetAssetPath(Selection.objects[i]);
             Debug.Log(path);
@@ -92,10 +100,17 @@ public class SvnExtension : EditorWindow
     }
     void OnRevertSelectedFileClick()
     {
-        if (Selection.count == 0) return;
-        //var rootPath = Directory.GetCurrentDirectory();
+#if UNITY_2019
+        if (Selection.objects.Length == 0) return;
+#elif UNITY_2020
+        if (Selection.count == 0) return; 
+#endif
         List<string> files = new List<string>();
-        for (int i = 0; i < Selection.count; i++)
+#if UNITY_2019
+        for (int i = 0; i < Selection.objects.Length; i++)
+#elif UNITY_2020
+        for (int i = 0; i < Selection.count; i++) 
+#endif
         {
             string path = AssetDatabase.GetAssetPath(Selection.objects[i]);
             Debug.Log(path);
@@ -148,9 +163,17 @@ public class SvnExtension : EditorWindow
 
     bool SomeSelectedFileExist()
     {
-        if (Selection.count > 0)
+#if UNITY_2019
+        if (Selection.objects.Length == 0) return false;
+#elif UNITY_2020
+        if (Selection.count == 0) return false; 
+#endif
         {
-            for (int i = 0; i < Selection.count; i++)
+#if UNITY_2019
+            for (int i = 0; i < Selection.objects.Length; i++)
+#elif UNITY_2020
+            for (int i = 0; i < Selection.count; i++) 
+#endif
             {
                 if (File.Exists(AssetDatabase.GetAssetPath(Selection.objects[i])))
                     return true;
@@ -162,13 +185,13 @@ public class SvnExtension : EditorWindow
     {
         if (!CanUseSVNCheck())
         {
-            EditorGUILayout.HelpBox("Ñêà÷àéòå ïðèëîæåíèå TortoiseSVN è óñòàíîâèòå â äèðåêòîðèþ ïî óìîë÷àíèþ 'C:\\Program Files\\TortoiseSVN'", MessageType.Error);
+            EditorGUILayout.HelpBox("Ð¡ÐºÐ°Ñ‡Ð°Ð¹Ñ‚Ðµ Ð¿Ñ€Ð¸Ð»Ð¾Ð¶ÐµÐ½Ð¸Ðµ TortoiseSVN Ð¸ ÑƒÑÑ‚Ð°Ð½Ð¾Ð²Ð¸Ñ‚Ðµ Ð² Ð´Ð¸Ñ€ÐµÐºÑ‚Ð¾Ñ€Ð¸ÑŽ Ð¿Ð¾ ÑƒÐ¼Ð¾Ð»Ñ‡Ð°Ð½Ð¸ÑŽ 'C:\\Program Files\\TortoiseSVN'", MessageType.Error);
             return;
         }
         if (EditorSceneManager.GetActiveScene().isDirty)
         {
             GUI.enabled = false;
-            EditorGUILayout.HelpBox("Ñîõðàíèòå ñöåíó ïåðåä åå âûãðóçêîé â SVN", MessageType.Warning);
+            EditorGUILayout.HelpBox("Ð¡Ð¾Ñ…Ñ€Ð°Ð½Ð¸Ñ‚Ðµ ÑÑ†ÐµÐ½Ñƒ Ð¿ÐµÑ€ÐµÐ´ ÐµÐµ Ð²Ñ‹Ð³Ñ€ÑƒÐ·ÐºÐ¾Ð¹ Ð² SVN", MessageType.Warning);
         }
         else GUI.enabled = true;
         if (GUILayout.Button("Add"))
