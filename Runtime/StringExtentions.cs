@@ -229,6 +229,16 @@ public static class StringExtentions
         double.TryParse(s.Replace(",", "."), System.Globalization.NumberStyles.Float, ci, out res);
         return res;
     }
+
+    public static string Replace(this string s, string[] oldVals, string newVal)
+    {
+        for (int i = 0; i < oldVals.Length; i++)
+        {
+            s = s.Replace(oldVals[i], newVal);
+        }
+        return s;
+    }
+    
     /// <summary>
     /// перемешать список
     /// </summary>
