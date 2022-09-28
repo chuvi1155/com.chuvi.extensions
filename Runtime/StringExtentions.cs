@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 public static class StringExtentions
 {/// <summary>
@@ -211,12 +211,14 @@ public static class StringExtentions
 
     public static int ToInt(this string s)
     {
+        if (string.IsNullOrEmpty(s)) return 0;
         int res;
         int.TryParse(s, out res);
         return res;
     }
     public static float ToFloat(this string s)
     {
+        if (string.IsNullOrEmpty(s)) return 0;
         System.Globalization.CultureInfo ci = new System.Globalization.CultureInfo("en-US");
         float res;
         float.TryParse(s.Replace(",", "."), System.Globalization.NumberStyles.Float, ci, out res);
@@ -224,6 +226,7 @@ public static class StringExtentions
     }
     public static double ToDouble(this string s)
     {
+        if (string.IsNullOrEmpty(s)) return 0;
         System.Globalization.CultureInfo ci = new System.Globalization.CultureInfo("en-US");
         double res;
         double.TryParse(s.Replace(",", "."), System.Globalization.NumberStyles.Float, ci, out res);
