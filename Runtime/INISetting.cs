@@ -4,14 +4,13 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Threading;
-using UnityEngine;
 
 public class INISetting
 {
-    public static UserINISetting instance;
-
-    public static string FileName { get { return instance.FileName; } }
+    private static UserINISetting instance;
     public static Dictionary<UserINISetting.GroupValue, UserINISetting.INI_Values> Data => instance.Data;
+    public static string FileName { get { return instance.FileName; } }
+
     public static string DEFAULT_GROUP
     {
         get { return instance.DEFAULT_GROUP; }
@@ -20,18 +19,13 @@ public class INISetting
     static INISetting()
     {
         instance = ReloadINI("settings.ini");
-#if CHUVI_SETTINGS
-        UnityEngine.GameObject go = UnityEngine.Resources.Load<UnityEngine.GameObject>("Settings");
-        var inst = UnityEngine.GameObject.Instantiate(go);
-        var contr = inst.GetComponent<ISettingsController>();
-        contr.Settings = instance; 
-#endif
     }
 
     public static void ReloadINI()
     {
         instance = new UserINISetting(instance.FileName);
     }
+
     public static UserINISetting ReloadINI(string filename)
     {
         var instance = new UserINISetting(filename);
@@ -105,29 +99,22 @@ public class INISetting
 }
 
 public class UserINISetting
-#if CHUVI_EXTENSIONS
-         : ISettings 
-#endif
 {
     private Dictionary<GroupValue, INI_Values> groups = new Dictionary<GroupValue, INI_Values>();
     private string defaultGroup = "Default";
 
-    public string FileName = "";
-
     public Dictionary<GroupValue, INI_Values> Data => groups;
+    public string FileName = "";
 
     public string DEFAULT_GROUP
     {
         get { return defaultGroup; }
     }
 
-#if CHUVI_EXTENSIONS
-    object ISettings.RawData => Data; 
-#endif
 
     public UserINISetting(string filename)
     {
-        CultureInfo ci = new CultureInfo("en-US");
+        CultureInfo ci = new System.Globalization.CultureInfo("en-US");
         Thread.CurrentThread.CurrentCulture = ci;
         Thread.CurrentThread.CurrentUICulture = ci;
 
@@ -178,13 +165,7 @@ public class UserINISetting
     public string GetValue(string group, string key)
     {
         string val;
-        //if (val.Contains(key))
-        //{
-        //    Debug.Log("1");
-        //}
-        //else
-        //    Debug.Log("2");
-        TryGetValue<string>(group, key, out val); //
+        TryGetValue<string>(group, key, out val);
         return val;
     }
     public T GetValue<T>(string group, string key)
@@ -202,7 +183,7 @@ public class UserINISetting
 
     public bool TryGetValue<T>(string group, string key, out T val)
     {
-        if (groups.ContainsKey(group))//
+        if (groups.ContainsKey(group))
         {
             if (groups[group].ContainsKey(key))
             {
@@ -218,7 +199,7 @@ public class UserINISetting
         else
         {
             groups.Add(new GroupValue(group, ValueType.Comments), new INI_Values());
-            groups[group].Add(key, new ValueResult(default(T).ToString(), ValueType.Comments));//
+            groups[group].Add(key, new ValueResult(default(T).ToString(), ValueType.Comments));
             Save(FileName);
         }
 
@@ -374,22 +355,6 @@ public class UserINISetting
         return line;
     }
 
-#if CHUVI_EXTENSIONS
-    ISettingsData[] ISettings.GetData()
-    {
-        List<ISettingsData> data = new List<ISettingsData>();
-        foreach (var group in groups)
-        {
-            foreach (var key in group.Value.Keys)
-            {
-                IniData idata = new IniData(group.Key, key, this);
-                data.Add(idata);
-            }
-        }
-        return data.ToArray();
-    } 
-#endif
-
     public enum ValueType
     {
         Value = 0,
@@ -449,9 +414,7 @@ public class UserINISetting
         }
     }
     public class INI_Values : Dictionary<string, ValueResult>
-    {
-
-    }
+    { }
     public class ValueResult
     {
         string value;
@@ -622,47 +585,4 @@ public class UserINISetting
             return value;
         }
     }
-
-#if CHUVI_EXTENSIONS
-    private class IniData : ISettingsData
-    {
-        string group, key;
-        UserINISetting settings;
-        string ISettingsData.Group => group;
-
-        string ISettingsData.Key => key;
-
-        public IniData(string _group, string _key, UserINISetting _settings)
-        {
-            group = _group.Replace("[", "").Replace("]", "");
-            key = _key;
-            settings = _settings;
-        }
-
-        T ISettingsData.GetData<T>()
-        {
-            return settings.GetValue<T>(group, key);
-        }
-
-        Type ISettingsData.GetDataType()
-        {
-            string str = settings.GetValue(group, key);
-            if (string.IsNullOrEmpty(str))
-            {
-                return typeof(string);
-            }
-            else
-            {
-                string val = str.ToLower();
-                return val == "true" || val == "false" ? typeof(bool) : typeof(string);
-            }
-        }
-
-        void ISettingsData.SetData<T>(T value)
-        {
-            settings.SetValue(group, key, value, false);
-        }
-    } 
-#endif
 }
-
