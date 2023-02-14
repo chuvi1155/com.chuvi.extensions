@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Threading;
+using UnityEngine;
 
 public class INISetting
 {
@@ -18,7 +19,11 @@ public class INISetting
 
     static INISetting()
     {
-        instance = ReloadINI("settings.ini");
+#if !UNITY_ANDROID && !UNITY_IOS
+            instance = ReloadINI("settings.ini"); 
+#else
+        instance = ReloadINI(Path.Combine(Application.persistentDataPath, "settings.ini"));
+#endif
     }
 
     public static void ReloadINI()
