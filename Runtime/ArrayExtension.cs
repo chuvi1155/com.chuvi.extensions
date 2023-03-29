@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.InteropServices;
 
 public static class ArrayExtension 
@@ -61,13 +61,63 @@ public static class ArrayExtension
                 handle.Free();
         }
     }
-    public static byte[] ToByteArray<T>(T[] source) where T : struct
+    public static T[] FromByteArray<T>(this byte[] source, int length) where T : struct
+    {
+        T[] destination = new T[length / Marshal.SizeOf(typeof(T))];
+        GCHandle handle = GCHandle.Alloc(destination, GCHandleType.Pinned);
+        try
+        {
+            IntPtr pointer = handle.AddrOfPinnedObject();
+            Marshal.Copy(source, 0, pointer, length);
+            return destination;
+        }
+        finally
+        {
+            if (handle.IsAllocated)
+                handle.Free();
+        }
+    }
+    public static void FromByteArray<T>(this byte[] source, ref T[] destination, int length) where T : struct
+    {
+        int newLength = length / Marshal.SizeOf(typeof(T));
+        if (destination.Length != newLength)
+            System.Array.Resize(ref destination, newLength);
+        GCHandle handle = GCHandle.Alloc(destination, GCHandleType.Pinned);
+        try
+        {
+            IntPtr pointer = handle.AddrOfPinnedObject();
+            Marshal.Copy(source, 0, pointer, length);
+        }
+        finally
+        {
+            if (handle.IsAllocated)
+                handle.Free();
+        }
+    }
+    public static byte[] ToByteArray<T>(this T[] source) where T : struct
     {
         GCHandle handle = GCHandle.Alloc(source, GCHandleType.Pinned);
         try
         {
             IntPtr pointer = handle.AddrOfPinnedObject();
             byte[] destination = new byte[source.Length * Marshal.SizeOf(typeof(T))];
+            Marshal.Copy(pointer, destination, 0, destination.Length);
+            return destination;
+        }
+        finally
+        {
+            if (handle.IsAllocated)
+                handle.Free();
+        }
+    }
+    public static float[] ToFloatArray<T>(this T[] source) where T : struct
+    {
+        GCHandle handle = GCHandle.Alloc(source, GCHandleType.Pinned);
+        try
+        {
+            IntPtr pointer = handle.AddrOfPinnedObject();
+            int sz = Marshal.SizeOf(typeof(T));
+            float[] destination = new float[source.Length * (sz / sizeof(float))];
             Marshal.Copy(pointer, destination, 0, destination.Length);
             return destination;
         }
