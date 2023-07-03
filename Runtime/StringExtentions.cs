@@ -77,21 +77,6 @@ public static class StringExtentions
         return "";
     }
     
-    public static string After(this string s, string value)
-    {
-        if (string.IsNullOrEmpty(s)) return "";
-        if (s.Contains(value))
-            return s.Substring(s.IndexOf(value) + value.Length);
-        return "";
-    }
-    public static string AfterLast(this string s, string value)
-    {
-        if (string.IsNullOrEmpty(s)) return "";
-        if (s.Contains(value))
-            return s.Substring(s.LastIndexOf(value) + value.Length);
-        return "";
-    }
-
     public static bool TryAfter(this string s, string value, out string result)
     {
         result = "";
@@ -117,16 +102,24 @@ public static class StringExtentions
 
     public static string Before(this string s, string value)
     {
-        if (string.IsNullOrEmpty(s)) return "";
-        if (s.Contains(value))
-            return s.Substring(0, s.IndexOf(value));
-        return "";
+        return Before(s, value, false);
     }
     public static string BeforeLast(this string s, string value)
     {
+        return BeforeLast(s, value, false);
+    }
+    public static string BeforeInclude(this string s, string value)
+    {
         if (string.IsNullOrEmpty(s)) return "";
         if (s.Contains(value))
-            return s.Substring(0, s.LastIndexOf(value));
+            return s.Substring(0, s.IndexOf(value) + value.Length);
+        return "";
+    }
+    public static string BeforeLastInclude(this string s, string value)
+    {
+        if (string.IsNullOrEmpty(s)) return "";
+        if (s.Contains(value))
+            return s.Substring(0, s.LastIndexOf(value) + value.Length);
         return "";
     }
 
