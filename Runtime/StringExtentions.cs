@@ -102,11 +102,17 @@ public static class StringExtentions
 
     public static string Before(this string s, string value)
     {
-        return Before(s, value, false);
+        if (string.IsNullOrEmpty(s)) return "";
+        if (s.Contains(value))
+            return s.Substring(0, s.IndexOf(value));
+        return "";
     }
     public static string BeforeLast(this string s, string value)
     {
-        return BeforeLast(s, value, false);
+        if (string.IsNullOrEmpty(s)) return "";
+        if (s.Contains(value))
+            return s.Substring(0, s.LastIndexOf(value));
+        return "";
     }
     public static string BeforeInclude(this string s, string value)
     {
