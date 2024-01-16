@@ -1,7 +1,9 @@
 {
     "name": "Unity.ChuviExtensions.Editor",
     "rootNamespace": "",
-    "references": [],
+    "references": [
+        "GUID:4a8869d5677508446a57b24e9c9068f1"
+    ],
     "includePlatforms": [
         "Editor"
     ],
