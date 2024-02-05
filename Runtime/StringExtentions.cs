@@ -259,4 +259,16 @@ public static class StringExtentions
             list[n] = value;
         }
     }
+    public delegate T ParseAction<T>(string s);
+    /// <summary>
+    /// Преобразовывает строку в нужный тип
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="s"></param>
+    /// <param name="parseAction"></param>
+    /// <returns></returns>
+    public static T TryParse<T>(this string s, ParseAction<T> parseAction)
+    {
+        return parseAction(s);
+    }
 }
