@@ -267,12 +267,37 @@ public class UserINISetting
 
     public bool Exists(string group)
     {
-        return groups.ContainsKey(group);
+        if (!groups.ContainsKey(group))
+            return false;
+        bool isComment = false;
+        foreach (var g in groups.Keys)
+        {
+            if (g.Name == group)
+            {
+                if (g.Type == ValueType.Value && isComment)
+                {
+                    isComment = false;
+                    break;
+                }
+                else if (g.Type == ValueType.Comments)
+                {
+                    isComment = true;
+                } 
+            }
+        }
+        return !isComment;
+        //return groups.ContainsKey(group);
     }
 
     public bool Exists(string group, string key)
     {
-        return groups.ContainsKey(group) && groups[group].ContainsKey(key);
+        if(!groups.ContainsKey(group))
+            return false;
+        if(!groups[group].ContainsKey(key))
+            return false;
+        var k = groups[group][key];
+        return k.Type == ValueType.Value;
+        //return groups.ContainsKey(group) && groups[group].ContainsKey(key);
     }
 
     public void SetValue(string group, string key, object value, bool isComment)
@@ -432,6 +457,7 @@ public class UserINISetting
 
         public ValueResult(string _value, ValueType type = ValueType.Value)
         {
+            Type = type;
             value = _value.Replace("\n", "\\n");
         }
 
