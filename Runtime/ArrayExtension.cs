@@ -1,4 +1,5 @@
 using System;
+using PythonLike;
 using System.Runtime.InteropServices;
 
 public static class ArrayExtension 
@@ -126,5 +127,10 @@ public static class ArrayExtension
             if (handle.IsAllocated)
                 handle.Free();
         }
+    }
+
+    public static object[] Unpack(this byte[] source, string format)
+    {
+        return StructConverter.Unpack(format, source);
     }
 }
