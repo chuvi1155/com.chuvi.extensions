@@ -20,6 +20,7 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Text;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 
 /// \mainpage
@@ -40,14 +41,14 @@ using System.Collections.Generic;
 /// 
 /// \subsection OSCmessages OSC Messages
 /// OSC messages are represented by the class OscMessage, and consist of two elements:
-/// - An address string for the device on the board youíre dealing with.
+/// - An address string for the device on the board youÐ½re dealing with.
 /// - A list of value(s) being sent to or from that device. The list of values is optional.
 /// 
 /// From the perspective of OSC addresses, the Make Controller Kit is organized into a hierarchy of two or three layers:
-/// - subsystems ñ classes of device, such as analog inputs, servo controllers, and digital outputs.
-/// - devices ñ the index of a specific device within a subsystem.  
+/// - subsystems Ñ classes of device, such as analog inputs, servo controllers, and digital outputs.
+/// - devices Ñ the index of a specific device within a subsystem.  
 /// If there is only one device in a subsystem, the device is not included in the OSC address.
-/// - properties ñ different devices have different properties, such as the value of an analog input, 
+/// - properties Ñ different devices have different properties, such as the value of an analog input, 
 /// the position of a servo motor, or the state of an LED. 
 /// 
 /// OSC messages always begin with a slash, and use a slash to delimit each element in the address, 
@@ -72,8 +73,8 @@ using System.Collections.Generic;
 /// \section sendingdata Sending Data
 /// As previously mentioned, the Make Controller Kit can communicate over both 
 /// Ethernet and USB.  Messages are sent as packets, both over USB and UDP, and 
-/// corresponding structures are used ñ UsbPacket and UdpPacket.  Once youíve created 
-/// a packet, you can simply call its Send() method, with the OscMessage youíd like to send.  
+/// corresponding structures are used Ñ UsbPacket and UdpPacket.  Once youÐ½ve created 
+/// a packet, you can simply call its Send() method, with the OscMessage youÐ½d like to send.  
 /// There are helper methods to create an OscMessage from a string, or you can pass in the OscMessage itself. 
 /// 
 /// For example, you might set up your UsbSend() routine to look something like:
@@ -87,7 +88,7 @@ using System.Collections.Generic;
 /// 
 /// \section readingdata Reading Data
 /// The Make Controller Kit must be polled in order to read data from it.  To do this, 
-/// send an OscMessage with the address of the device youíd like to read, but omit 
+/// send an OscMessage with the address of the device youÐ½d like to read, but omit 
 /// the list of values.  When the board receives an OscMessage with no value, 
 /// it interprets that as a read request, and sends back an OscMessage with the 
 /// current value at the appropriate address.
@@ -139,6 +140,12 @@ public class UDPPacketIO
         LocalPort = localPort;
         socketsOpen = false;
     }
+    public UDPPacketIO(string hostIP, int remotePort)
+    {
+        RemoteHostName = hostIP;
+        RemotePort = remotePort;
+        socketsOpen = false;
+    }
 
 
     ~UDPPacketIO()
@@ -162,10 +169,13 @@ public class UDPPacketIO
         try
         {
             Sender = new UdpClient();
-            Console.WriteLine("Opening OSC listener on port " + localPort);
 
-            IPEndPoint listenerIp = new IPEndPoint(IPAddress.Any, localPort);
-            Receiver = new UdpClient(listenerIp);
+            if (localPort > 0)
+            {
+                UnityEngine.Debug.Log("Opening OSC listener on port " + localPort);
+                IPEndPoint listenerIp = new IPEndPoint(IPAddress.Any, localPort);
+                Receiver = new UdpClient(listenerIp);
+            }
 
 
             socketsOpen = true;
@@ -237,21 +247,19 @@ public class UDPPacketIO
     /// </summary>
     /// <param name="buffer">The buffer to be read into.</param>
     /// <returns>The number of bytes read, or 0 on failure.</returns>
-    public int ReceivePacket(byte[] buffer)
+    public int ReceivePacket(byte[] buffer, out IPEndPoint iep)
     {
+        iep = null;
         if (!IsOpen())
             Open();
         if (!IsOpen())
             return 0;
 
-
-        IPEndPoint iep = new IPEndPoint(IPAddress.Any, localPort);
+        iep = new IPEndPoint(IPAddress.Any, localPort);
         byte[] incoming = Receiver.Receive(ref iep);
         int count = Math.Min(buffer.Length, incoming.Length);
         System.Array.Copy(incoming, buffer, count);
         return count;
-
-
     }
 
 
@@ -310,6 +318,7 @@ public class UDPPacketIO
 /// </summary>
 public class OscMessage
 {
+    public IPEndPoint endPoint;
     /// <summary>
     /// The OSC address of the message as a string.
     /// </summary>
@@ -482,8 +491,9 @@ public class OSC
     private OSC(int port)
     {
         isInit = false;
-
+        inPort = port;
         OscPacketIO = new UDPPacketIO(outIP, outPort, inPort);
+        OscPacketIO.Open();
         AddressTable = new Hashtable();
 
         buffer = new byte[1000];
@@ -494,17 +504,20 @@ public class OSC
         ReadThread.IsBackground = true;
         ReadThread.Start();
         isInit = true;
+        UnityEngine.Debug.Log("Create OSC reciever port: " + port);
     }
     private OSC(string ip, int port)
     {
         isInit = false;
         outIP = ip;
         outPort = port;
-        OscPacketIO = new UDPPacketIO(outIP, outPort, inPort);
+        OscPacketIO = new UDPPacketIO(outIP, outPort);
+        OscPacketIO.Open();
         AddressTable = new Hashtable();
 
         buffer = new byte[1000];
         isInit = true;
+        UnityEngine.Debug.Log("Create OSC sender");
     }
 
     public void OnDestroy()
@@ -553,7 +566,7 @@ public class OSC
     public void Close()
     {
         //Debug.Log("Osc Cancel start");
-
+        isInit = false;
 
         if (ReaderRunning)
         {
@@ -572,7 +585,7 @@ public class OSC
             }
             OscPacketIO.Close();
             OscPacketIO = null;
-            Console.WriteLine("Closed OSC listener");
+            UnityEngine.Debug.Log("Closed OSC listener");
         }
     }
 
@@ -588,7 +601,7 @@ public class OSC
         {
             while (ReaderRunning)
             {
-                int length = OscPacketIO.ReceivePacket(buffer);
+                int length = OscPacketIO.ReceivePacket(buffer, out IPEndPoint iep);
 
                 if (length > 0)
                 {
@@ -599,6 +612,7 @@ public class OSC
                             ArrayList array = OSC.PacketToOscMessages(buffer, length);
                             foreach (OscMessage msg in array)
                             {
+                                msg.endPoint = iep;
                                 if (AllMessageHandler != null)
                                     AllMessageHandler(msg);
 
@@ -636,8 +650,8 @@ public class OSC
     /// <param name="oscMessage">The OSC Message to send.</param>   
     public void Send(OscMessage oscMessage)
     {
-        byte[] packet = new byte[1000];
-        int length = OSC.OscMessageToPacket(oscMessage, packet, 1000);
+        byte[] packet = new byte[1024];
+        int length = OSC.OscMessageToPacket(oscMessage, packet, packet.Length);
         OscPacketIO.SendPacket(packet, length);
     }
 
@@ -648,8 +662,8 @@ public class OSC
     /// <param name="oms">The OSC Message to send.</param>   
     public void Send(ArrayList oms)
     {
-        byte[] packet = new byte[1000];
-        int length = OSC.OscMessagesToPacket(oms, packet, 1000);
+        byte[] packet = new byte[1024];
+        int length = OSC.OscMessagesToPacket(oms, packet, packet.Length);
         OscPacketIO.SendPacket(packet, length);
     }
 
@@ -865,8 +879,24 @@ public class OSC
                 }
                 else if (o is byte b)
                 {
+                    UnityEngine.Debug.Log("[OSC][OscMessageToPacket] count bytes:" + 1);
                     tag.Append("B");
+                    packet[index++] = 1;
                     packet[index++] = b;
+                }
+                else if (o is Array arr)
+                {
+                    UnityEngine.Debug.Log("[OSC][OscMessageToPacket] count bytes:" + arr.Length);
+                    tag.Append("B");
+                    var bytes = System.BitConverter.GetBytes(arr.Length);
+                    for (int i = 0; i < bytes.Length; i++)
+                    {
+                        packet[index++] = bytes[i];
+                    }
+                    for (int i = 0; i < arr.Length; i++)
+                    {
+                        packet[index++] = (byte)arr.GetValue(i);
+                    }
                 }
                 else
                 {
@@ -957,8 +987,8 @@ public class OSC
                         buffer[2] = packet[index++];
                         buffer[1] = packet[index++];
                         buffer[0] = packet[index++];
-                        MemoryStream ms = new MemoryStream(buffer);
-                        BinaryReader br = new BinaryReader(ms);
+                        using MemoryStream ms = new MemoryStream(buffer);
+                        using BinaryReader br = new BinaryReader(ms);
                         float f = br.ReadSingle();
                         oscM.values.Add(f);
                         break;
@@ -970,10 +1000,32 @@ public class OSC
                         {
                             buffer[i] = packet[index++];
                         }
-                        MemoryStream ms = new MemoryStream(buffer);
-                        BinaryReader br = new BinaryReader(ms);
+                        using MemoryStream ms = new MemoryStream(buffer);
+                        using BinaryReader br = new BinaryReader(ms);
                         bool b = br.ReadBoolean();
                         oscM.values.Add(b);
+                        break;
+                    }
+                case 'B': // bytes array
+                    {
+                        byte[] buffer = new byte[sizeof(int)];
+                        for (int i = 0; i < buffer.Length; i++)
+                        {
+                            buffer[i] = packet[index++];
+                        }
+                        int count = BitConverter.ToInt32(buffer);
+                        UnityEngine.Debug.Log("[OSC][ExtractMessage] count bytes:" + count);
+                        if (count > 1)
+                        {
+                            buffer = new byte[count];
+                            for (int i = 0; i < buffer.Length; i++)
+                            {
+                                buffer[i] = packet[index++];
+                            }
+                            oscM.values.Add(buffer);
+                        }
+                        else
+                            oscM.values.Add(packet[index++]);
                         break;
                     }
             }
