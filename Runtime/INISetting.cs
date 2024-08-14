@@ -20,9 +20,15 @@ public class INISetting
     static INISetting()
     {
 #if !UNITY_ANDROID && !UNITY_IOS
-            instance = ReloadINI("settings.ini"); 
+            instance = ReloadINI("settings.ini");
 #else
         instance = ReloadINI(Path.Combine(Application.persistentDataPath, "settings.ini"));
+#endif
+#if CHUVI_EXTENSIONS && CHUVI_SETTINGS
+        UnityEngine.GameObject go = UnityEngine.Resources.Load<UnityEngine.GameObject>("Settings");
+        var inst = UnityEngine.GameObject.Instantiate(go);
+        var contr = inst.GetComponent<ISettingsController>();
+        contr.Settings = instance;
 #endif
     }
 
@@ -104,6 +110,9 @@ public class INISetting
 }
 
 public class UserINISetting
+#if CHUVI_EXTENSIONS
+        : ISettings
+#endif
 {
     private Dictionary<GroupValue, INI_Values> groups = new Dictionary<GroupValue, INI_Values>();
     private string defaultGroup = "Default";
@@ -115,6 +124,11 @@ public class UserINISetting
     {
         get { return defaultGroup; }
     }
+
+#if CHUVI_EXTENSIONS
+    string raw;
+    object ISettings.RawData => raw;
+#endif
 
 
     public UserINISetting(string filename)
@@ -128,6 +142,9 @@ public class UserINISetting
         groups.Clear();
 
         string[] lines = File.ReadAllLines(filename);
+#if CHUVI_EXTENSIONS
+        raw = string.Join("\n", lines); 
+#endif
 
         GroupValue curent_group_key = defaultGroup;
 
@@ -362,6 +379,9 @@ public class UserINISetting
                     line += string.Format("{0}={1}\r\n", item.Key, item.Value.ToString());
             }
         }
+#if CHUVI_EXTENSIONS
+        raw = line;
+#endif
         File.WriteAllText(fileName, line, System.Text.Encoding.UTF8);
     }
 
@@ -616,4 +636,55 @@ public class UserINISetting
             return value;
         }
     }
+
+#if CHUVI_EXTENSIONS
+    ISettingsData[] ISettings.GetData()
+    {
+        List<ISettingsData> data = new List<ISettingsData>();
+        foreach (var group in groups)
+        {
+            foreach (var keyVal in group.Value)
+            {
+                if (string.IsNullOrEmpty(keyVal.Key))
+                    continue;
+
+                INIData idata = new INIData(group.Key.Name, keyVal.Key, this);
+                data.Add(idata);
+            }
+        }
+        return data.ToArray();
+    }
+
+    private class INIData : ISettingsData
+    {
+        string group, key;
+        UserINISetting settings;
+        string ISettingsData.Group => group;
+        string ISettingsData.Key => key;
+
+        public INIData(string _group, string _key, UserINISetting _settings)
+        {
+            group = _group;
+            key = _key;
+            settings = _settings;
+        }
+
+        T ISettingsData.GetData<T>()
+        {
+            return settings.GetValue<T>(group, key);
+        }
+        Type ISettingsData.GetDataType()
+        {
+            var val = settings.GetValue(group, key);
+            if(val.ToLower() == "true" || val.ToLower() == "false")
+                return typeof(bool);
+            return typeof(string);
+        }
+
+        void ISettingsData.SetData<T>(T value)
+        {
+            settings.SetValue(group, key, value, false);
+        }
+    }
+#endif
 }
