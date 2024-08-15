@@ -282,6 +282,7 @@ public static class StringExtentions
 	/// <returns></returns>
 	public static T GetValue<T>(this string value)
 	{
+		var ci = new CultureInfo("en-US");
 		if (string.IsNullOrEmpty(value)) return default(T);
 		if (typeof(T) == typeof(string)) return (T)(object)value;
 
@@ -297,9 +298,9 @@ public static class StringExtentions
 			string[] bytes = val.Replace("{", "").Replace("}", "").Split(new char[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries);
 			if (bytes.Length > 2)
 			{
-				float r = float.Parse(bytes[0], new CultureInfo("en-US"));
-				float g = float.Parse(bytes[1], new CultureInfo("en-US"));
-				float b = float.Parse(bytes[2], new CultureInfo("en-US"));
+				float r = float.Parse(bytes[0], ci);
+				float g = float.Parse(bytes[1], ci);
+				float b = float.Parse(bytes[2], ci);
 				float a = 1;
 				if (bytes.Length == 4)
 					a = float.Parse(bytes[3]);
@@ -316,8 +317,8 @@ public static class StringExtentions
 			string[] bytes = val.Replace("{", "").Replace("}", "").Split(new char[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries);
 			if (bytes.Length > 1)
 			{
-				float r = float.Parse(bytes[0], new CultureInfo("en-US"));
-				float g = float.Parse(bytes[1], new CultureInfo("en-US"));
+				float r = float.Parse(bytes[0], ci);
+				float g = float.Parse(bytes[1], ci);
 				object col = new UnityEngine.Vector2(r, g);
 				return (T)col;
 			}
@@ -331,8 +332,8 @@ public static class StringExtentions
 			string[] bytes = val.Replace("{", "").Replace("}", "").Split(new char[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries);
 			if (bytes.Length > 1)
 			{
-				int r = int.Parse(bytes[0], new CultureInfo("en-US"));
-				int g = int.Parse(bytes[1], new CultureInfo("en-US"));
+				int r = int.Parse(bytes[0], ci);
+				int g = int.Parse(bytes[1], ci);
 				object col = new UnityEngine.Vector2Int(r, g);
 				return (T)col;
 			}
@@ -346,9 +347,9 @@ public static class StringExtentions
 			string[] bytes = val.Replace("{", "").Replace("}", "").Split(new char[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries);
 			if (bytes.Length > 2)
 			{
-				float r = float.Parse(bytes[0], new CultureInfo("en-US"));
-				float g = float.Parse(bytes[1], new CultureInfo("en-US"));
-				float b = float.Parse(bytes[2], new CultureInfo("en-US"));
+				float r = float.Parse(bytes[0], ci);
+				float g = float.Parse(bytes[1], ci);
+				float b = float.Parse(bytes[2], ci);
 				object col = new UnityEngine.Vector3(r, g, b);
 				return (T)col;
 			}
@@ -362,9 +363,9 @@ public static class StringExtentions
 			string[] bytes = val.Replace("{", "").Replace("}", "").Split(new char[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries);
 			if (bytes.Length > 2)
 			{
-				int r = int.Parse(bytes[0], new CultureInfo("en-US"));
-				int g = int.Parse(bytes[1], new CultureInfo("en-US"));
-				int b = int.Parse(bytes[2], new CultureInfo("en-US"));
+				int r = int.Parse(bytes[0], ci);
+				int g = int.Parse(bytes[1], ci);
+				int b = int.Parse(bytes[2], ci);
 				object col = new UnityEngine.Vector3Int(r, g, b);
 				return (T)col;
 			}
@@ -378,13 +379,30 @@ public static class StringExtentions
 			string[] bytes = val.Replace("{", "").Replace("}", "").Split(new char[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries);
 			if (bytes.Length > 2)
 			{
-				float r = float.Parse(bytes[0], new CultureInfo("en-US"));
-				float g = float.Parse(bytes[1], new CultureInfo("en-US"));
-				float b = float.Parse(bytes[2], new CultureInfo("en-US"));
+				float r = float.Parse(bytes[0], ci);
+				float g = float.Parse(bytes[1], ci);
+				float b = float.Parse(bytes[2], ci);
 				float a = 1;
 				if (bytes.Length == 4)
 					a = float.Parse(bytes[3]);
 				object col = new UnityEngine.Vector4(r, g, b, a);
+				return (T)col;
+			}
+			else return default(T);
+		}
+		else if (typeof(T) == typeof(UnityEngine.Quaternion))
+		{
+			int n1 = value.IndexOf("(") + 1;
+			int n2 = value.IndexOf(")");
+			string val = value.Substring(n1, n2 - n1);
+			string[] bytes = val.Replace("{", "").Replace("}", "").Split(new char[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries);
+			if (bytes.Length > 2)
+			{
+				float r = float.Parse(bytes[0], ci);
+				float g = float.Parse(bytes[1], ci);
+				float b = float.Parse(bytes[2], ci);
+				float a = float.Parse(bytes[3], ci);
+				object col = new UnityEngine.Quaternion(r, g, b, a);
 				return (T)col;
 			}
 			else return default(T);
@@ -397,10 +415,10 @@ public static class StringExtentions
 			string[] bytes = val.Replace("{", "").Replace("}", "").Split(new char[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries);
 			if (bytes.Length == 4)
 			{
-				float x = float.Parse(bytes[0].Substring(bytes[0].IndexOf(":") + 1), new CultureInfo("en-US"));
-				float y = float.Parse(bytes[1].Substring(bytes[1].IndexOf(":") + 1), new CultureInfo("en-US"));
-				float w = float.Parse(bytes[2].Substring(bytes[2].IndexOf(":") + 1), new CultureInfo("en-US"));
-				float h = float.Parse(bytes[3].Substring(bytes[3].IndexOf(":") + 1), new CultureInfo("en-US"));
+				float x = float.Parse(bytes[0].Substring(bytes[0].IndexOf(":") + 1), ci);
+				float y = float.Parse(bytes[1].Substring(bytes[1].IndexOf(":") + 1), ci);
+				float w = float.Parse(bytes[2].Substring(bytes[2].IndexOf(":") + 1), ci);
+				float h = float.Parse(bytes[3].Substring(bytes[3].IndexOf(":") + 1), ci);
 				object col = new UnityEngine.Rect(x, y, w, h);
 				return (T)col;
 			}
@@ -414,10 +432,10 @@ public static class StringExtentions
 			string[] bytes = val.Replace("{", "").Replace("}", "").Split(new char[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries);
 			if (bytes.Length == 4)
 			{
-				int x = int.Parse(bytes[0].Substring(bytes[0].IndexOf(":") + 1), new CultureInfo("en-US"));
-				int y = int.Parse(bytes[1].Substring(bytes[1].IndexOf(":") + 1), new CultureInfo("en-US"));
-				int w = int.Parse(bytes[2].Substring(bytes[2].IndexOf(":") + 1), new CultureInfo("en-US"));
-				int h = int.Parse(bytes[3].Substring(bytes[3].IndexOf(":") + 1), new CultureInfo("en-US"));
+				int x = int.Parse(bytes[0].Substring(bytes[0].IndexOf(":") + 1), ci);
+				int y = int.Parse(bytes[1].Substring(bytes[1].IndexOf(":") + 1), ci);
+				int w = int.Parse(bytes[2].Substring(bytes[2].IndexOf(":") + 1), ci);
+				int h = int.Parse(bytes[3].Substring(bytes[3].IndexOf(":") + 1), ci);
 				object col = new UnityEngine.RectInt(x, y, w, h);
 				return (T)col;
 			}
@@ -427,7 +445,7 @@ public static class StringExtentions
 #endif
 
 		if (typeof(T) == typeof(float))
-			return (T)System.Convert.ChangeType(value.Replace(",", "."), typeof(T), new CultureInfo("en-US"));
-		return (T)System.Convert.ChangeType(value, typeof(T), new CultureInfo("en-US"));
+			return (T)System.Convert.ChangeType(value.Replace(",", "."), typeof(T), ci);
+		return (T)System.Convert.ChangeType(value, typeof(T), ci);
 	}
 }
