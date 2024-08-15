@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+
 public static class StringExtentions
 {/// <summary>
     /// Возвращает строку от искомого текста и до конца
