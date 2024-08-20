@@ -289,7 +289,7 @@ public static class StringExtentions
 		if (typeof(T).IsEnum)
 			return (T)Enum.Parse(typeof(T), value);
 
-#if UNITY_5_0_OR_NEWER
+//#if UNITY_5_0_OR_NEWER
 		if (typeof(T) == typeof(UnityEngine.Color))
 		{
 			int n1 = value.IndexOf("(") + 1;
@@ -442,7 +442,7 @@ public static class StringExtentions
 			else return default(T);
 		}
 
-#endif
+//#endif
 
 		if (typeof(T) == typeof(float))
 			return (T)System.Convert.ChangeType(value.Replace(",", "."), typeof(T), ci);
