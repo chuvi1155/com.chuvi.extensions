@@ -324,9 +324,9 @@ public class UserINISetting
         if (Exists(group, key))
         {
             if (!(value is float))
-                groups[group][key] = new ValueResult(value.ToString());
+                groups[group][key] = new ValueResult(value.ToString(), isComment ? ValueType.Comments : ValueType.Value);
             else
-                groups[group][key] = new ValueResult(value.ToString().Replace(",", "."));
+                groups[group][key] = new ValueResult(value.ToString().Replace(",", "."), isComment ? ValueType.Comments : ValueType.Value);
         }
         else
         {
@@ -334,9 +334,9 @@ public class UserINISetting
                 groups.Add(group, new INI_Values());
             if (!groups[group].ContainsKey(key))
             {
-                if (!(value is float)) groups[group].Add(key, new ValueResult(value.ToString()));
+                if (!(value is float)) groups[group].Add(key, new ValueResult(value.ToString(), isComment ? ValueType.Comments : ValueType.Value));
                 else
-                    groups[group].Add(key, new ValueResult(value.ToString().Replace(",", ".")));
+                    groups[group].Add(key, new ValueResult(value.ToString().Replace(",", "."), isComment ? ValueType.Comments : ValueType.Value));
             }
         }
         if (value.GetType().IsEnum && !groups.ContainsKey("ENUM:" + value.GetType().Name))
@@ -344,7 +344,7 @@ public class UserINISetting
             INI_Values _iv2 = new INI_Values();
             string[] names = Enum.GetNames(value.GetType());
             for (int i = 0; i < names.Length; i++)
-                _iv2.Add("names[" + i + "]", new ValueResult(names[i]));
+                _iv2.Add("names[" + i + "]", new ValueResult(names[i], isComment ? ValueType.Comments : ValueType.Value));
             groups.Add("ENUM:" + value.GetType().Name, _iv2);
         }
     }
@@ -374,7 +374,15 @@ public class UserINISetting
             foreach (var item in item_group.Value)
             {
                 if (item.Value.Type == ValueType.Comments || item_group.Key.Type == ValueType.Comments)
-                    line += string.Format("#{0}={1}\r\n", item.Key, item.Value.ToString());
+                {
+                    List<object> list = new List<object>();
+                    if(!string.IsNullOrEmpty(item.Key))
+                        list.Add(item.Key);
+                    if (!string.IsNullOrEmpty(item.Value.ToString()))
+                        list.Add(item.Value.ToString());
+                    var comment = string.Join("=", list);
+                    line += string.Format("#{0}\r\n", comment);
+                }
                 else
                     line += string.Format("{0}={1}\r\n", item.Key, item.Value.ToString());
             }
