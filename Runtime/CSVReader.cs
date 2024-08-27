@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -7,6 +7,11 @@ public class CSVReader
 {
     [SerializeField] Row[] rows;
     public Row[] Rows { get => rows; }
+
+    public CSVReader() 
+    {
+        this.rows = new Row[0];
+    }
     public CSVReader(string csv, char separator = ',')
     {
         var lines = csv.Split("\r\n");//.Skip(1);
@@ -21,6 +26,23 @@ public class CSVReader
         this.rows = rows.ToArray();
     }
 
+    public void AddRow(Row row)
+    {
+        if(rows != null && rows.Length > 0)
+        {
+            if (rows[0].Collumns.Length != row.Collumns.Length)
+                throw new System.Exception("Length of Columns array must be equal existed");
+        }
+        if(rows == null) rows = new Row[1];
+        else System.Array.Resize(ref rows, rows.Length + 1);
+        rows[^1] = row;
+    }
+
+    public string ToCSVString(char separator = ',')
+    {
+        return string.Join("\r\n", System.Array.ConvertAll(rows, row => row.ToCSVString(separator)));
+    }
+
     [System.Serializable]
     public class Row
     {
@@ -28,6 +50,10 @@ public class CSVReader
         public readonly bool HasError;
         public Collumn[] Collumns { get => collumns; }
 
+        public Row()
+        {
+            collumns = new Collumn[0];
+        }
         internal Row(string line, char separator = ',')
         {
             var cols = line.Split(separator);
@@ -53,7 +79,15 @@ public class CSVReader
                             var col = string.Join(separator, cols, start, (i - start) + 1).TrimStart('\"').TrimEnd('\"');
                             columns.Add(new Collumn(col, columns.Count));
                         }
-                        else columns.Add(new Collumn(cols[i], columns.Count));
+                        else
+                        {
+                            if(cols[i].StartsWith("\""))
+                            {
+                                var col = cols[i].After("\"").BeforeLast("\"");
+                                columns.Add(new Collumn(col, columns.Count));
+                            }
+                            else columns.Add(new Collumn(cols[i], columns.Count));
+                        }
                     }
                     else
                     {
@@ -68,20 +102,47 @@ public class CSVReader
             }
             collumns = columns.ToArray();
         }
+
+        public void AddColumn(string value)
+        {
+            AddColumn(new Collumn(value));
+        }
+        public void AddColumn(Collumn col)
+        {
+            if (collumns == null) collumns = new Collumn[1];
+            else System.Array.Resize(ref collumns, collumns.Length + 1);
+            col.Index = collumns.Length - 1;
+            collumns[^1] = col;
+        }
+
+        public string ToCSVString(char separator = ',')
+        {
+            return string.Join(separator, System.Array.ConvertAll(collumns, col => col.ToCSVString(separator)));
+        }
     }
     [System.Serializable]
     public class Collumn
     {
         [SerializeField] string value;
         public string Value { get => value; set => this.value = value; }
-        public readonly bool IsEmpty;
-        public readonly int Index;
+        public bool IsEmpty => string.IsNullOrEmpty(value) || string.IsNullOrWhiteSpace(value);
+        public int Index { get; internal set; }
 
+        public Collumn(string value)
+        {
+            this.value = value.Replace("\r", "\n");
+        }
         internal Collumn(string value, int index)
         {
             this.value = value.Replace("\r", "\n");
-            IsEmpty = string.IsNullOrEmpty(value) || string.IsNullOrWhiteSpace(value);
             Index = index;
+        }
+
+        public string ToCSVString(char separator = ',')
+        {
+            if (value.Contains(separator) || value.Contains("\n"))
+                value = $"\"{value}\"";
+            return value;
         }
 
         public override string ToString()
