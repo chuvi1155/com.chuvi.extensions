@@ -210,11 +210,60 @@ public static class StringExtentions
         return -1;
     }
 
+    public static byte ToByte(this string s)
+    {
+        if (string.IsNullOrEmpty(s)) return 0;
+        byte res;
+        byte.TryParse(s, out res);
+        return res;
+    }
+    public static sbyte ToSByte(this string s)
+    {
+        if (string.IsNullOrEmpty(s)) return 0;
+        sbyte res;
+        sbyte.TryParse(s, out res);
+        return res;
+    }
+    public static long ToLong(this string s)
+    {
+        if (string.IsNullOrEmpty(s)) return 0;
+        long res;
+        long.TryParse(s, out res);
+        return res;
+    }
+    public static ulong ToULong(this string s)
+    {
+        if (string.IsNullOrEmpty(s)) return 0;
+        ulong res;
+        ulong.TryParse(s, out res);
+        return res;
+    }
     public static int ToInt(this string s)
     {
         if (string.IsNullOrEmpty(s)) return 0;
         int res;
         int.TryParse(s, out res);
+        return res;
+    }
+    public static uint ToUInt(this string s)
+    {
+        if (string.IsNullOrEmpty(s)) return 0;
+        uint res;
+        uint.TryParse(s, out res);
+        return res;
+    }
+    public static short ToShort(this string s)
+    {
+        if (string.IsNullOrEmpty(s)) return 0;
+        short res;
+        short.TryParse(s, out res);
+        return res;
+    }
+    public static ushort ToUShort(this string s)
+    {
+        if (string.IsNullOrEmpty(s)) return 0;
+        ushort res;
+        ushort.TryParse(s, out res);
         return res;
     }
     public static float ToFloat(this string s)
