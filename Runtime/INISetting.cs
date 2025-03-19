@@ -393,6 +393,11 @@ public class UserINISetting
         File.WriteAllText(fileName, line, System.Text.Encoding.UTF8);
     }
 
+    public void ClearAll()
+    {
+        groups.Clear();
+    }
+
     public override string ToString()
     {
         string line = "";
