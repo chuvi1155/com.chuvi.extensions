@@ -76,7 +76,11 @@ public class CSVReader
                         int len = i - start;
                         if (len != 0)
                         {
+#if NET_STANDARD_2_1
                             var col = string.Join(separator, cols, start, (i - start) + 1).TrimStart('\"').TrimEnd('\"');
+#else
+                            var col = string.Join(separator.ToString(), cols, start, (i - start) + 1).TrimStart('\"').TrimEnd('\"');
+#endif
                             columns.Add(new Collumn(col, columns.Count));
                         }
                         else
