@@ -1013,7 +1013,7 @@ public class OSC
                         {
                             buffer[i] = packet[index++];
                         }
-#if NET_STANDARD_2_1
+#if NET_STANDARD_2_1 || NET_UNITY_4_8
                         int count = BitConverter.ToInt32(buffer);
 #else
                         int count = BitConverter.ToInt32(buffer, 0);
