@@ -1013,7 +1013,11 @@ public class OSC
                         {
                             buffer[i] = packet[index++];
                         }
+#if NET_STANDARD_2_1
                         int count = BitConverter.ToInt32(buffer);
+#else
+                        int count = BitConverter.ToInt32(buffer, 0);
+#endif
                         UnityEngine.Debug.Log("[OSC][ExtractMessage] count bytes:" + count);
                         if (count > 1)
                         {
