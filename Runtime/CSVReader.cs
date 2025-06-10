@@ -35,7 +35,11 @@ public class CSVReader
         }
         if(rows == null) rows = new Row[1];
         else System.Array.Resize(ref rows, rows.Length + 1);
-        rows[^1] = row;
+#if NET_STANDARD_2_1
+        rows[^1] = col; 
+#else
+        rows[rows.Length - 1] = row;
+#endif
     }
 
     public string ToCSVString(char separator = ',')
@@ -116,12 +120,20 @@ public class CSVReader
             if (collumns == null) collumns = new Collumn[1];
             else System.Array.Resize(ref collumns, collumns.Length + 1);
             col.Index = collumns.Length - 1;
-            collumns[^1] = col;
+#if NET_STANDARD_2_1
+            collumns[^1] = col; 
+#else
+            collumns[collumns.Length - 1] = col;
+#endif
         }
 
         public string ToCSVString(char separator = ',')
         {
+#if NET_STANDARD_2_1
             return string.Join(separator, System.Array.ConvertAll(collumns, col => col.ToCSVString(separator)));
+#else
+            return string.Join(separator.ToString(), System.Array.ConvertAll(collumns, col => col.ToCSVString(separator)));
+#endif
         }
     }
     [System.Serializable]
