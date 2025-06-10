@@ -36,7 +36,7 @@ public class CSVReader
         if(rows == null) rows = new Row[1];
         else System.Array.Resize(ref rows, rows.Length + 1);
 #if NET_STANDARD_2_1
-        rows[^1] = col; 
+        rows[^1] = row; 
 #else
         rows[rows.Length - 1] = row;
 #endif
