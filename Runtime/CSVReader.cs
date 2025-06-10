@@ -35,7 +35,7 @@ public class CSVReader
         }
         if(rows == null) rows = new Row[1];
         else System.Array.Resize(ref rows, rows.Length + 1);
-#if NET_STANDARD_2_1
+#if NET_STANDARD_2_1 || NET_UNITY_4_8
         rows[^1] = row; 
 #else
         rows[rows.Length - 1] = row;
@@ -80,7 +80,7 @@ public class CSVReader
                         int len = i - start;
                         if (len != 0)
                         {
-#if NET_STANDARD_2_1
+#if NET_STANDARD_2_1 || NET_UNITY_4_8
                             var col = string.Join(separator, cols, start, (i - start) + 1).TrimStart('\"').TrimEnd('\"');
 #else
                             var col = string.Join(separator.ToString(), cols, start, (i - start) + 1).TrimStart('\"').TrimEnd('\"');
@@ -120,7 +120,7 @@ public class CSVReader
             if (collumns == null) collumns = new Collumn[1];
             else System.Array.Resize(ref collumns, collumns.Length + 1);
             col.Index = collumns.Length - 1;
-#if NET_STANDARD_2_1
+#if NET_STANDARD_2_1 || NET_UNITY_4_8
             collumns[^1] = col; 
 #else
             collumns[collumns.Length - 1] = col;
@@ -129,7 +129,7 @@ public class CSVReader
 
         public string ToCSVString(char separator = ',')
         {
-#if NET_STANDARD_2_1
+#if NET_STANDARD_2_1 || NET_UNITY_4_8
             return string.Join(separator, System.Array.ConvertAll(collumns, col => col.ToCSVString(separator)));
 #else
             return string.Join(separator.ToString(), System.Array.ConvertAll(collumns, col => col.ToCSVString(separator)));
