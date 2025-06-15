@@ -102,33 +102,33 @@ public static class StringExtentions
         return false;
     }
 
-    public static string Before(this string s, string value)
+    public static string Before(this string s, string value, bool emptyIfNotExistsValue = true)
     {
         if (string.IsNullOrEmpty(s)) return "";
         if (s.Contains(value))
             return s.Substring(0, s.IndexOf(value));
-        return "";
+        return emptyIfNotExistsValue ? "" : s;
     }
-    public static string BeforeLast(this string s, string value)
+    public static string BeforeLast(this string s, string value, bool emptyIfNotExistsValue = true)
     {
         if (string.IsNullOrEmpty(s)) return "";
         if (s.Contains(value))
             return s.Substring(0, s.LastIndexOf(value));
-        return "";
+        return emptyIfNotExistsValue ? "" : s;
     }
-    public static string BeforeInclude(this string s, string value)
+    public static string BeforeInclude(this string s, string value, bool emptyIfNotExistsValue = true)
     {
         if (string.IsNullOrEmpty(s)) return "";
         if (s.Contains(value))
             return s.Substring(0, s.IndexOf(value) + value.Length);
-        return "";
+        return emptyIfNotExistsValue ? "" : s;
     }
-    public static string BeforeLastInclude(this string s, string value)
+    public static string BeforeLastInclude(this string s, string value, bool emptyIfNotExistsValue = true)
     {
         if (string.IsNullOrEmpty(s)) return "";
         if (s.Contains(value))
             return s.Substring(0, s.LastIndexOf(value) + value.Length);
-        return "";
+        return emptyIfNotExistsValue ? "" : s;
     }
 
     public static bool TryBefore(this string s, string value, out string result)
@@ -142,6 +142,7 @@ public static class StringExtentions
         }
         return false;
     }
+
     public static bool TryBeforeLast(this string s, string value, out string result)
     {
         result = "";
@@ -154,6 +155,16 @@ public static class StringExtentions
         }
         return false;
     }
+
+    public static bool IsNullOrEmpty(this string s)
+    {
+        return string.IsNullOrEmpty(s);
+    }
+    public static bool IsNullOrEmptyOrWhitespace(this string s)
+    {
+        return string.IsNullOrEmpty(s) || string.IsNullOrWhiteSpace(s);
+    }
+
     /// <summary>
     /// разбивает строки по указанному разделителю и удаляет пустые строки
     /// </summary>
