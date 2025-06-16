@@ -177,6 +177,8 @@ public class UserINISetting
             ValueResult vr = null;
             if (ab.Length == 2)
                 vr = new ValueResult(ab[1].Trim().Replace("&equal;", "="), isComment ? ValueType.Comments : ValueType.Value);
+            else if (ab.Length > 2)
+                vr = new ValueResult(string.Join("=", ab, 1, ab.Length - 1), isComment ? ValueType.Comments : ValueType.Value);
             else vr = new ValueResult("", isComment ? ValueType.Comments : ValueType.Value);
             if (!groups.ContainsKey(curent_group_key))
                 groups.Add(curent_group_key, new INI_Values());
