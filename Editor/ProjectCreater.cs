@@ -18,6 +18,8 @@ public class ProjectCreater : MonoBehaviour
             AssetDatabase.CreateFolder("Assets/Resources", "Screens");
         if (!AssetDatabase.IsValidFolder("Assets/Prefabs"))
             AssetDatabase.CreateFolder("Assets", "Prefabs");
+        if (!AssetDatabase.IsValidFolder("Assets/Fonts"))
+            AssetDatabase.CreateFolder("Assets", "Fonts");
 
         AddTag("MainCanvas");
     }
